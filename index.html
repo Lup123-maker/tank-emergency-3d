@@ -211,6 +211,7 @@ let fireIntensity = 0, targetFireIntensity = 0;
 let personnel = [], valves = [], pumpImpellers = [];
 let alarmLights = [], fireGlow;
 let waterRingOn = false, foamOn = false;
+let fireTruck = null, truckMoving = false, truckSpray = false, truckStream = null;
 let rainValve = null, accidentValve = null, initRainValve = null; // 三级防控三阀
 let containValves = []; // [雨水外排阀, 事故水阀, 初期雨水阀]
 let rainTask = ''; // 关阀任务状态
@@ -299,6 +300,7 @@ function init() {
     buildPersonnel();
     buildFireSystems();
     buildAlarmDevices();
+    buildFireTruck();
 
     // 环境反射贴图(PMREMGenerator生成渐变天空)
     const pmrem = new THREE.PMREMGenerator(renderer);
@@ -1247,7 +1249,7 @@ function buildPersonnel() {
         makePerson('班长', '现场指挥', 0x1565c0, true),
         makePerson('计量员', '计量监测', 0xe65100, true),
         makePerson('油槽工甲', '关阀·报警', 0x2e7d32),
-        makePerson('油槽工乙', '停泵·泡沫', 0xb71c1c, true)
+        makePerson('油槽工乙', '泵房工艺', 0xb71c1c, true)
     ];
     personnel.forEach(p => {
         p.group.position.copy(muster);
@@ -1559,6 +1561,115 @@ function buildAlarmDevices() {
     });
 }
 
+// ---------- 消防车 ----------
+function buildFireTruck() {
+    const g = new THREE.Group();
+    const red = new THREE.MeshStandardMaterial({ color: 0xd32f2f, roughness: 0.45, metalness: 0.3 });
+    const darkRed = new THREE.MeshStandardMaterial({ color: 0xb71c1c, roughness: 0.5, metalness: 0.3 });
+    const black = new THREE.MeshStandardMaterial({ color: 0x212121, roughness: 0.7, metalness: 0.1 });
+    const chrome = new THREE.MeshStandardMaterial({ color: 0xbdbdbd, roughness: 0.2, metalness: 0.8 });
+    // 车身(器材箱)
+    const body = new THREE.Mesh(new THREE.BoxGeometry(S(5), S(3.2), S(11)), red);
+    body.position.set(0, S(2.8), -S(1));
+    body.castShadow = true;
+    g.add(body);
+    // 驾驶室
+    const cab = new THREE.Mesh(new THREE.BoxGeometry(S(5), S(3), S(4)), darkRed);
+    cab.position.set(0, S(3.0), S(6.5));
+    cab.castShadow = true;
+    g.add(cab);
+    // 挡风玻璃
+    const glass = new THREE.Mesh(new THREE.BoxGeometry(S(4.2), S(1.6), S(0.15)),
+        new THREE.MeshStandardMaterial({ color: 0x90caf9, roughness: 0.1, metalness: 0.3, transparent: true, opacity: 0.6 }));
+    glass.position.set(0, S(3.6), S(8.55));
+    g.add(glass);
+    // 车轮(4个)
+    const wheelGeo = new THREE.CylinderGeometry(S(1.1), S(1.1), S(0.8), 16);
+    [[-S(2.6), S(4.5)], [S(2.6), S(4.5)], [-S(2.6), S(-4)], [S(2.6), S(-4)]].forEach(([wx, wz]) => {
+        const w = new THREE.Mesh(wheelGeo, black);
+        w.rotation.z = Math.PI / 2;
+        w.position.set(wx, S(1.1), wz);
+        w.castShadow = true;
+        g.add(w);
+    });
+    // 车顶消防炮(水炮)
+    const monitorBase = new THREE.Mesh(new THREE.CylinderGeometry(S(0.4), S(0.6), S(1.2), 12), chrome);
+    monitorBase.position.set(0, S(5.0), S(6.5));
+    g.add(monitorBase);
+    const monitorBarrel = new THREE.Mesh(new THREE.CylinderGeometry(S(0.25), S(0.3), S(3), 10), chrome);
+    monitorBarrel.rotation.x = -Math.PI * 0.3; // 仰角
+    monitorBarrel.position.set(0, S(5.8), S(7.5));
+    g.add(monitorBarrel);
+    // 警灯
+    const beacon = new THREE.Mesh(new THREE.CylinderGeometry(S(0.4), S(0.4), S(0.5), 12),
+        new THREE.MeshStandardMaterial({ color: 0xff1744, emissive: 0xff1744, emissiveIntensity: 0.8, roughness: 0.3 }));
+    beacon.position.set(0, S(4.8), S(6.5));
+    g.add(beacon);
+    // 定位: 东消防通道(x≈150), 初始在南侧场外(z=90), 驶入后停在泵房前(z=-8)
+    g.rotation.y = -Math.PI / 2; // 车头朝西(面向罐区)
+    g.position.set(S(150), 0, S(90)); // 初始位置(场外南侧)
+    g.userData.label = '消防车';
+    scene.add(g);
+    fireTruck = g;
+    // 水炮粒子(从炮口射向T301-2罐顶)
+    const t2 = TANKS[1], t2pos = tankPos(t2);
+    const origin = new THREE.Vector3(S(148), S(8), S(-8)); // 炮口世界坐标(停车后)
+    const target = new THREE.Vector3(t2pos.x, S(t2.H + 2), t2pos.z);
+    const count = 250;
+    truckStream = createParticleSystem(count, () => ({
+        x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0, life: 0, maxLife: 1, active: false
+    }), (p, dt, i) => {
+        if (!truckSpray) { p.active = false; return; }
+        if (!p.active) {
+            p.x = origin.x + (Math.random() - 0.5) * S(0.6);
+            p.y = origin.y + (Math.random() - 0.5) * S(0.4);
+            p.z = origin.z + (Math.random() - 0.5) * S(0.6);
+            const dx = target.x - origin.x, dy = target.y - origin.y, dz = target.z - origin.z;
+            const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+            const spd = S(38 + Math.random() * 8);
+            p.vx = (dx / dist) * spd + (Math.random() - 0.5) * S(2);
+            p.vy = (dy / dist) * spd + S(6 + Math.random() * 3); // 额外上抛形成弧线
+            p.vz = (dz / dist) * spd + (Math.random() - 0.5) * S(2);
+            p.life = 0;
+            p.maxLife = 1.2 + Math.random() * 0.5;
+            p.active = true;
+        }
+        p.life += dt;
+        p.vy -= S(14) * dt; // 重力
+        if (p.life >= p.maxLife || p.y < S(1)) { p.active = false; return; }
+        p.x += p.vx * dt; p.y += p.vy * dt; p.z += p.vz * dt;
+        const idx = i * 3;
+        truckStream.colors[idx] = 0.6; truckStream.colors[idx + 1] = 0.85; truckStream.colors[idx + 2] = 1.0;
+        truckStream.sizes[i] = S(0.8);
+    });
+    const tMat = new THREE.PointsMaterial({
+        size: S(0.8), vertexColors: true, transparent: true, opacity: 0.7,
+        depthWrite: false, sizeAttenuation: true
+    });
+    const tPoints = new THREE.Points(truckStream.geo, tMat);
+    tPoints.frustumCulled = false;
+    scene.add(tPoints);
+    spraySystems.push(truckStream);
+}
+
+function updateFireTruck(dt) {
+    if (!fireTruck) return;
+    // 驶入动画: 从南侧(z=90)开到泵房前(z=-8)
+    if (truckMoving) {
+        const targetZ = S(-8);
+        const speed = S(18) * dt; // 约18m/s
+        if (fireTruck.position.z > targetZ) {
+            fireTruck.position.z -= speed;
+            if (fireTruck.position.z <= targetZ) {
+                fireTruck.position.z = targetZ;
+                truckMoving = false;
+            }
+        } else {
+            truckMoving = false;
+        }
+    }
+}
+
 // ---------- 演练流程控制 ----------
 const PHASES = [
     { name: '巡检发现火情', duration: 6 },
@@ -1750,7 +1861,9 @@ function updateDrill(dt) {
             });
             once('2_4', () => {
                 waterRingOn = true;
+                truckMoving = true; // 消防车从南侧驶入
                 addLog('调度: 已远程开启T301-2及相邻罐喷淋盘管, 罐壁冷却水已投用!', 'ok');
+                addLog('调度: 消防车已出动, 预计1分钟内到达罐区东消防通道!');
             });
             once('2_5', () => {
                 personnel[0].radioPose = false;
@@ -1775,10 +1888,14 @@ function updateDrill(dt) {
                 addLog('班长、计量员到达三级防控阀区, 准备关闭三级防控阀门', 'ok');
                 addLog('油槽工乙到达泵房, 准备停运输油泵', 'ok');
             });
+            once('2_10', () => {
+                addLog('消防车到达东消防通道, 油槽工甲在泵房梯口接引就位', 'ok');
+                addLog('消防人员就位, 待命准备泡沫灭火作业');
+            });
             break;
         case 3: // 停泵·关三级防控阀
             once('3_0', () => {
-                addLog('进场分组作业: 班长、计量员背空气呼吸器关闭三级防控阀门, 油槽工乙负责停泵, 油槽工甲梯口警戒');
+                addLog('进场分组作业: 班长、计量员背空气呼吸器关闭三级防控阀门, 油槽工乙负责泵房工艺, 油槽工甲梯口警戒');
                 addLog('油槽工乙开始停运输油泵...');
             });
             once('3_3', () => {
@@ -1805,20 +1922,18 @@ function updateDrill(dt) {
             });
             once('3_14', () => {
                 addLog('班长: 报告调度, 工艺处置与三级防控关阀完毕, 请求开启泡沫系统!');
-                addLog('调度: 收到, 油槽工乙立即开启泡沫!');
+                addLog('调度: 收到, 消防车立即开启泡沫灭火!');
             });
             break;
         case 4: // 开启泡沫·灭火
             once('4_0', () => {
-                const t2pos = tankPos(TANKS[1]);
-                addLog('班长: 油槽工乙立即开启泡沫系统!');
-                // 油槽工乙沿东走廊(x=112)南下→T301-2泡沫产生器
-                setPersonPath(personnel[3], [[112, -32], [112, 36]],
-                    new THREE.Vector3(t2pos.x + S(23), 0, t2pos.z + S(4)));
+                truckSpray = true;
+                addLog('消防车水炮启动, 向T301-2罐顶射水冷却!', 'ok');
+                addLog('油槽工乙在泵房配合工艺: 确认泡沫管线泵已启动');
             });
             once('4_4', () => {
                 foamOn = true;
-                addLog('油槽工乙开启泡沫管线阀门, 泡沫产生器向T301-2浮盘喷射泡沫!', 'ok');
+                addLog('消防人员开启泡沫管线阀门, 泡沫产生器向T301-2浮盘喷射泡沫!', 'ok');
             });
             once('4_7', () => {
                 targetFireIntensity = 0.5;
@@ -1845,7 +1960,8 @@ function updateDrill(dt) {
             once('5_2', () => {
                 waterRingOn = false;
                 foamOn = false;
-                addLog('火势已扑灭, 停止冷却喷淋和泡沫供给, 泡沫覆盖层保持完整', 'ok');
+                truckSpray = false;
+                addLog('火势已扑灭, 停止冷却喷淋、泡沫供给及消防车水炮, 泡沫覆盖层保持完整', 'ok');
             });
             once('5_3', () => {
                 addLog('班长: 报告调度, T301-2火灾已扑灭, 请求解除应急响应', 'ok');
@@ -1986,18 +2102,18 @@ function updatePersonnel(dt) {
                 p.armR.rotation.x = -1.2;
                 p.armL.rotation.z = Math.sin(Date.now() * 0.005) * 0.3;
                 p.armR.rotation.z = -Math.sin(Date.now() * 0.005) * 0.3;
-            } else if (p.role === '停泵·泡沫' && currentPhase === 3) {
+            } else if (p.role === '泵房工艺' && currentPhase === 3) {
                 // 泵房操作: 按停泵按钮
                 p.armR.rotation.x = -0.9 + Math.sin(Date.now() * 0.004) * 0.2;
                 p.armR.rotation.z = -0.25;
                 p.armL.rotation.x = 0;
                 p.armL.rotation.z = 0.25;
-            } else if (p.role === '停泵·泡沫' && currentPhase === 4) {
-                // 泡沫操作: 开启泡沫阀
-                p.armL.rotation.x = -1.1;
-                p.armR.rotation.x = -1.1 + Math.sin(Date.now() * 0.006) * 0.15;
-                p.armL.rotation.z = 0.25;
-                p.armR.rotation.z = -0.25;
+            } else if (p.role === '泵房工艺' && currentPhase === 4) {
+                // 泵房工艺配合: 确认泡沫管线泵运行(观察仪表)
+                p.armL.rotation.x = -0.7;
+                p.armR.rotation.x = -0.5 + Math.sin(Date.now() * 0.003) * 0.1;
+                p.armL.rotation.z = 0.2;
+                p.armR.rotation.z = -0.2;
             } else if (p.role === '计量监测' && (currentPhase >= 2 && currentPhase <= 4)) {
                 // 计量员: 手持记录板监测(低头看+记录)
                 p.armL.rotation.x = -0.8;
@@ -2134,6 +2250,7 @@ function animate() {
     updateDrill(dt);
     updatePersonnel(dt);
     updateParticles(dt);
+    updateFireTruck(dt);
     updateFollowTarget();
     updateFollowCamera(dt);
     renderer.render(scene, camera);
