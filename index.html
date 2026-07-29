@@ -1098,7 +1098,7 @@ function makeValve(x, y, z, tankId, ry) {
 }
 
 // ---------- 应急人员(4人) ----------
-function makePerson(name, role, color) {
+function makePerson(name, role, color, scba) {
     const grp = new THREE.Group();
 
     const skinMat = new THREE.MeshStandardMaterial({ color: 0xf0c098, roughness: 0.6, metalness: 0.0 });
@@ -1174,6 +1174,32 @@ function makePerson(name, role, color) {
     strap.position.y = S(4.28);
     grp.add(strap);
 
+    // 空气呼吸器SCBA(背架+双气瓶+肩带), 仅进入罐区的应急人员佩戴
+    if (scba) {
+        const scbaMat = new THREE.MeshStandardMaterial({ color: 0x1c1f24, roughness: 0.5, metalness: 0.3 });
+        const cylMat = new THREE.MeshStandardMaterial({ color: 0x2f3a44, roughness: 0.35, metalness: 0.6 });
+        const backplate = new THREE.Mesh(new THREE.BoxGeometry(S(1.0), S(1.5), S(0.3)), scbaMat);
+        backplate.position.set(0, S(2.95), -S(0.62));
+        backplate.castShadow = true;
+        grp.add(backplate);
+        [-S(0.26), S(0.26)].forEach(x => {
+            const cyl = new THREE.Mesh(new THREE.CylinderGeometry(S(0.24), S(0.24), S(1.5), 14), cylMat);
+            cyl.position.set(x, S(2.95), -S(0.95));
+            cyl.castShadow = true;
+            grp.add(cyl);
+            const cap = new THREE.Mesh(new THREE.CylinderGeometry(S(0.12), S(0.12), S(0.22), 10),
+                new THREE.MeshStandardMaterial({ color: 0xc9a227, roughness: 0.4, metalness: 0.7 }));
+            cap.position.set(x, S(3.78), -S(0.95));
+            grp.add(cap);
+        });
+        [-S(0.4), S(0.4)].forEach(x => {
+            const s = new THREE.Mesh(new THREE.BoxGeometry(S(0.16), S(1.4), S(0.08)), scbaMat);
+            s.position.set(x, S(3.25), -S(0.32));
+            s.rotation.x = 0.18;
+            grp.add(s);
+        });
+    }
+
     // 手臂(以肩关节为枢轴的组, 使摆动更自然)
     function buildArm(side) {
         const pivot = new THREE.Group();
@@ -1208,7 +1234,7 @@ function makePerson(name, role, color) {
     pickables.push(torso);
     return {
         group: grp, name, role, armL, armR,
-        pos: new THREE.Vector3(), target: null, speed: S(8),
+        pos: new THREE.Vector3(), target: null, speed: S(11),
         walking: false, walkPhase: 0, arrived: false, radioPose: false,
         path: null, pathIndex: 0
     };
@@ -1218,10 +1244,10 @@ function buildPersonnel() {
     // 集结点: 罐区西侧空地(上风口, 防火墙外)
     const muster = new THREE.Vector3(S(-135), 0, S(20));
     personnel = [
-        makePerson('班长', '现场指挥', 0x1565c0),
-        makePerson('计量员', '计量监测', 0xe65100),
+        makePerson('班长', '现场指挥', 0x1565c0, true),
+        makePerson('计量员', '计量监测', 0xe65100, true),
         makePerson('油槽工甲', '关阀·报警', 0x2e7d32),
-        makePerson('油槽工乙', '停泵·泡沫', 0xb71c1c)
+        makePerson('油槽工乙', '停泵·泡沫', 0xb71c1c, true)
     ];
     personnel.forEach(p => {
         p.group.position.copy(muster);
@@ -1728,31 +1754,31 @@ function updateDrill(dt) {
             });
             once('2_5', () => {
                 personnel[0].radioPose = false;
-                addLog('班长: 各岗位注意! 全员进入罐区, 沿罐外走廊行进!');
-                // 人员出发 — 沿罐外走廊行进
-                const t2pos = tankPos(TANKS[1]);
-                // 班长: 西北走廊指挥位
-                setPersonPath(personnel[0], [[-112, -32], [-112, -55]],
-                    new THREE.Vector3(S(-112), 0, S(-55)));
-                // 计量员: 西侧走廊→南侧→T301-2上风口监测位
-                setPersonPath(personnel[1], [[-112, 32], [-112, 62], [59, 62], [59, 24]],
-                    new THREE.Vector3(t2pos.x - S(25), 0, t2pos.z - S(8)));
-                // 油槽工甲: 泵房外侧→东消防通道→东墙z=-32梯口进罐区→东走廊北上→出北墙x=84梯口→雨水外排阀/事故水阀
-                setPersonPath(personnel[2], [[145, -20], [145, -32], [124, -32], [112, -32], [112, -70], [84, -70], [84, -84]],
-                    new THREE.Vector3(rainValve.group.position.x + S(2.5), 0, rainValve.group.position.z + S(2.5)));
+                addLog('班长: 各岗位注意! 佩戴空气呼吸器, 沿罐外走廊进入罐区!');
+                // 班长+计量员: 背空呼进罐区→北侧三级防控阀区(初期雨水/雨水外排/事故水阀)
+                setPersonPath(personnel[0], [[-112, -32], [-112, -62], [78, -62], [78, -74]],
+                    new THREE.Vector3(S(78), 0, S(-74)));
+                setPersonPath(personnel[1], [[-112, 32], [-112, -62], [90, -62], [90, -74]],
+                    new THREE.Vector3(S(90), 0, S(-74)));
                 rainTask = 'going';
+                // 油槽工甲(发现人): 已报警并关紧急切断阀, 不再进罐区; 留东消防通道泵房梯口警戒, 对进场人员做安全简介
+                setPersonPath(personnel[2], [[145, -20], [131, -32]],
+                    new THREE.Vector3(S(128), 0, S(-32)));
                 // 油槽工乙: 西侧走廊→北侧→泵房
                 setPersonPath(personnel[3], [[-112, -32], [-112, -62], [112, -62], [112, -32]],
                     new THREE.Vector3(PUMP.x - PUMP.w / 2 - S(3), 0, PUMP.z));
             });
+            once('2_8', () => {
+                addLog('油槽工甲在东消防通道梯口警戒: 向进场人员简介火情与风险, 无关人员禁止进入罐区!', 'warn');
+            });
             once('2_9', () => {
-                addLog('计量员到达T301-2上风口监测位, 开始记录液位温度', 'ok');
+                addLog('班长、计量员到达三级防控阀区, 准备关闭三级防控阀门', 'ok');
                 addLog('油槽工乙到达泵房, 准备停运输油泵', 'ok');
             });
             break;
         case 3: // 停泵·关三级防控阀
             once('3_0', () => {
-                addLog('进场分两组作业: 油槽工乙负责工艺处置(停泵), 油槽工甲负责关闭三级防控阀门');
+                addLog('进场分组作业: 班长、计量员背空气呼吸器关闭三级防控阀门, 油槽工乙负责停泵, 油槽工甲梯口警戒');
                 addLog('油槽工乙开始停运输油泵...');
             });
             once('3_3', () => {
@@ -1763,19 +1789,19 @@ function updateDrill(dt) {
                 addLog('油槽工乙: 输油泵已全部停运! 工艺处置完成!', 'ok');
             });
             once('3_8', () => {
-                addLog('油槽工甲到达三级防控阀区, 开始依次关闭...', 'ok');
+                addLog('班长、计量员到达三级防控阀区, 开始依次关闭...', 'ok');
             });
             once('3_9', () => {
                 if (initRainValve) { initRainValve.closed = true; initRainValve.targetAngle = Math.PI * 6; }
-                addLog('油槽工甲: 初期雨水阀已关闭!', 'ok');
+                addLog('班长: 初期雨水阀已关闭!', 'ok');
             });
             once('3_11', () => {
                 if (rainValve) { rainValve.closed = true; rainValve.targetAngle = Math.PI * 6; }
-                addLog('油槽工甲: 雨水外排阀已关闭!', 'ok');
+                addLog('计量员: 雨水外排阀已关闭!', 'ok');
             });
             once('3_13', () => {
                 if (accidentValve) { accidentValve.closed = true; accidentValve.targetAngle = Math.PI * 6; }
-                addLog('油槽工甲: 事故水阀已关闭! 三级防控阀门全部关闭, 消防污水受控!', 'ok');
+                addLog('班长: 事故水阀已关闭! 三级防控阀门全部关闭, 消防污水受控!', 'ok');
             });
             once('3_14', () => {
                 addLog('班长: 报告调度, 工艺处置与三级防控关阀完毕, 请求开启泡沫系统!');
@@ -1867,8 +1893,8 @@ function updateDrill(dt) {
             v.wheel.rotation.z = v.angle;
         }
     });
-    // 油槽工甲到达三级防控阀区
-    if (rainTask === 'going' && personnel[2] && personnel[2].arrived) {
+    // 班长、计量员到达三级防控阀区
+    if (rainTask === 'going' && personnel[1] && personnel[1].arrived) {
         rainTask = 'done';
     }
     // 泵运转动画
@@ -1936,9 +1962,9 @@ function updatePersonnel(dt) {
                     p.pos.addScaledVector(dir, p.speed * dt);
                     p.group.position.copy(p.pos);
                     p.group.rotation.y = Math.atan2(dir.x, dir.z);
-                    p.walkPhase += dt * 10;
-                    p.armL.rotation.x = Math.sin(p.walkPhase) * 0.6;
-                    p.armR.rotation.x = -Math.sin(p.walkPhase) * 0.6;
+                    p.walkPhase += dt * 15;
+                    p.armL.rotation.x = Math.sin(p.walkPhase) * 0.85;
+                    p.armR.rotation.x = -Math.sin(p.walkPhase) * 0.85;
                     p.armL.rotation.z = 0.25;
                     p.armR.rotation.z = -0.25;
                     p.group.position.y = Math.abs(Math.sin(p.walkPhase)) * S(0.3);
@@ -1954,7 +1980,7 @@ function updatePersonnel(dt) {
         }
         // 战位操作动画(到位后按角色执行, 与演练进程同步)
         else if (p.arrived && !p.walking && drillRunning) {
-            if (p.role === '关阀·报警' && currentPhase === 3) {
+            if ((p.role === '现场指挥' || p.role === '计量监测') && currentPhase === 3) {
                 // 关阀动作: 双手转动手轮
                 p.armL.rotation.x = -1.2;
                 p.armR.rotation.x = -1.2;
