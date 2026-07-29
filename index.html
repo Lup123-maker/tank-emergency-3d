@@ -1,1079 +1,2119 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>罐区应急处置3D培训</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            overflow: hidden; 
-            font-family: -apple-system, BlinkMacSystemFont, "Microsoft YaHei", sans-serif;
-            background: #1a1a2e;
-        }
-        #canvas-container { width: 100vw; height: 100vh; }
-        canvas { display: block; }
-        
-        /* 顶部标题 */
-        #header {
-            position: fixed;
-            top: 0; left: 0; right: 0;
-            padding: 12px 20px;
-            background: linear-gradient(180deg, rgba(0,0,0,0.7) 0%, transparent 100%);
-            color: #fff;
-            z-index: 100;
-            pointer-events: none;
-        }
-        #header h1 {
-            font-size: 18px;
-            font-weight: 600;
-            text-shadow: 0 1px 3px rgba(0,0,0,0.5);
-        }
-        #header p {
-            font-size: 12px;
-            opacity: 0.8;
-            margin-top: 2px;
-        }
-
-        /* 步骤面板 */
-        #step-panel {
-            position: fixed;
-            bottom: 0; left: 0; right: 0;
-            background: linear-gradient(0deg, rgba(10,10,30,0.95) 0%, rgba(10,10,30,0.85) 70%, transparent 100%);
-            padding: 20px 20px 30px;
-            z-index: 100;
-            color: #fff;
-        }
-        #step-indicator {
-            display: flex;
-            justify-content: center;
-            gap: 8px;
-            margin-bottom: 14px;
-        }
-        .step-dot {
-            width: 10px; height: 10px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.3);
-            transition: all 0.3s;
-            cursor: pointer;
-        }
-        .step-dot.active {
-            background: #ff6b35;
-            box-shadow: 0 0 8px #ff6b35;
-            transform: scale(1.3);
-        }
-        .step-dot.completed {
-            background: #4ecdc4;
-        }
-        #step-title {
-            font-size: 20px;
-            font-weight: 700;
-            text-align: center;
-            margin-bottom: 8px;
-            color: #ff6b35;
-        }
-        #step-desc {
-            font-size: 14px;
-            line-height: 1.6;
-            text-align: center;
-            opacity: 0.9;
-            max-width: 500px;
-            margin: 0 auto 16px;
-        }
-        #step-controls {
-            display: flex;
-            justify-content: center;
-            gap: 12px;
-        }
-        .btn {
-            padding: 10px 24px;
-            border: none;
-            border-radius: 25px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            touch-action: manipulation;
-        }
-        .btn:active { transform: scale(0.95); }
-        .btn-prev {
-            background: rgba(255,255,255,0.15);
-            color: #fff;
-            border: 1px solid rgba(255,255,255,0.3);
-        }
-        .btn-next {
-            background: linear-gradient(135deg, #ff6b35, #f7931e);
-            color: #fff;
-            box-shadow: 0 4px 15px rgba(255,107,53,0.4);
-        }
-        .btn-auto {
-            background: rgba(78,205,196,0.2);
-            color: #4ecdc4;
-            border: 1px solid #4ecdc4;
-        }
-        .btn-auto.playing {
-            background: #4ecdc4;
-            color: #1a1a2e;
-        }
-
-        /* 加载画面 */
-        #loading {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: #1a1a2e;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 999;
-            color: #fff;
-            transition: opacity 0.5s;
-        }
-        #loading.hidden { opacity: 0; pointer-events: none; }
-        .loader {
-            width: 50px; height: 50px;
-            border: 3px solid rgba(255,255,255,0.1);
-            border-top-color: #ff6b35;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        #loading p { margin-top: 16px; font-size: 14px; opacity: 0.7; }
-
-        /* 提示 */
-        #hint {
-            position: fixed;
-            top: 70px; left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0,0,0,0.6);
-            color: #fff;
-            padding: 6px 14px;
-            border-radius: 15px;
-            font-size: 12px;
-            z-index: 100;
-            opacity: 0;
-            transition: opacity 0.5s;
-            pointer-events: none;
-        }
-        #hint.show { opacity: 1; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>301罐区T301-2储罐火灾应急演练 - 3D模拟</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { overflow: hidden; font-family: "Microsoft YaHei", sans-serif; background: #0d1b2a; }
+#canvas-container { width: 100vw; height: 100vh; }
+canvas { display: block; }
+#header {
+    position: fixed; top: 0; left: 0; right: 0;
+    padding: 10px 20px;
+    background: linear-gradient(180deg, rgba(10,20,35,0.92) 0%, transparent 100%);
+    color: #fff; z-index: 100; pointer-events: none;
+}
+#header h1 { font-size: 16px; font-weight: 600; }
+#header p { font-size: 11px; opacity: 0.65; margin-top: 2px; }
+/* 演练控制 */
+#ctrl-panel {
+    position: fixed; top: 70px; right: 15px; z-index: 100;
+    display: flex; flex-direction: column; gap: 6px; align-items: flex-end;
+}
+.ctrl-btn {
+    padding: 9px 18px; border: none; border-radius: 6px;
+    font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+#btn-start { background: #e53935; color: #fff; }
+#btn-start:hover { background: #ff5252; }
+#btn-start:disabled { background: #555; color: #999; cursor: not-allowed; }
+#btn-reset { background: rgba(255,255,255,0.15); color: #cde; border: 1px solid rgba(255,255,255,0.3); }
+#btn-reset:hover { background: rgba(255,255,255,0.25); }
+#btn-speed { background: rgba(255,255,255,0.15); color: #cde; border: 1px solid rgba(255,255,255,0.3); }
+.view-btn {
+    padding: 6px 12px; border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 5px; background: rgba(0,30,60,0.85);
+    color: #abc; font-size: 11px; cursor: pointer; transition: all 0.2s;
+}
+.view-btn:hover { background: rgba(0,80,140,0.9); color: #fff; }
+/* 阶段进度 */
+#phase-bar {
+    position: fixed; top: 70px; left: 15px; z-index: 100;
+    background: rgba(5,15,30,0.9); border: 1px solid rgba(100,180,255,0.25);
+    border-radius: 10px; padding: 12px 16px; width: 240px;
+}
+#phase-bar h3 { font-size: 12px; color: #4af; margin-bottom: 8px; }
+.phase-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 4px 0; font-size: 11px; color: #6a8090; transition: all 0.3s;
+}
+.phase-item .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #334; border: 1px solid #556; transition: all 0.3s; flex-shrink: 0;
+}
+.phase-item.active { color: #fff; font-weight: 600; }
+.phase-item.active .dot { background: #ff9800; border-color: #ffb74d; box-shadow: 0 0 6px #ff9800; }
+.phase-item.done { color: #7dcea0; }
+.phase-item.done .dot { background: #4caf50; border-color: #66bb6a; }
+/* 事件日志 */
+#event-log {
+    position: fixed; bottom: 15px; left: 15px; z-index: 100;
+    background: rgba(5,15,30,0.92); border: 1px solid rgba(100,180,255,0.25);
+    border-radius: 10px; padding: 12px 16px; width: 420px; max-height: 200px; overflow-y: auto;
+}
+#event-log h3 { font-size: 12px; color: #4af; margin-bottom: 6px; }
+.log-item { font-size: 11px; color: #b0c4d4; padding: 2px 0; line-height: 1.5; }
+.log-item .time { color: #ffb74d; margin-right: 6px; font-family: Consolas, monospace; }
+.log-item.warn { color: #ff8a65; }
+.log-item.ok { color: #81c784; }
+/* 状态面板 */
+#status-panel {
+    position: fixed; bottom: 15px; right: 15px; z-index: 100;
+    background: rgba(5,15,30,0.92); border: 1px solid rgba(100,180,255,0.25);
+    border-radius: 10px; padding: 12px 16px; width: 260px;
+}
+#status-panel h3 { font-size: 12px; color: #4af; margin-bottom: 6px; }
+.status-row { display: flex; justify-content: space-between; font-size: 11px; padding: 3px 0; color: #8aa; }
+.status-row .val { color: #fff; font-weight: 600; }
+.status-row .val.danger { color: #ff5252; }
+.status-row .val.safe { color: #69f0ae; }
+/* 警报覆盖层 */
+#alarm-overlay {
+    position: fixed; inset: 0; z-index: 90; pointer-events: none;
+    border: 4px solid transparent; transition: border-color 0.3s;
+}
+#alarm-overlay.active { animation: alarmFlash 1s infinite; }
+@keyframes alarmFlash {
+    0%, 100% { border-color: rgba(255,0,0,0); }
+    50% { border-color: rgba(255,0,0,0.5); }
+}
+#alarm-banner {
+    position: fixed; top: 50px; left: 50%; transform: translateX(-50%);
+    background: rgba(200,20,20,0.95); color: #fff; padding: 8px 30px;
+    border-radius: 20px; font-size: 14px; font-weight: 700; z-index: 110;
+    display: none; animation: bannerPulse 1.2s infinite;
+}
+@keyframes bannerPulse { 0%,100% { opacity: 1; } 50% { opacity: 0.7; } }
+#success-banner {
+    position: fixed; top: 50px; left: 50%; transform: translateX(-50%);
+    background: rgba(27,142,60,0.95); color: #fff; padding: 8px 30px;
+    border-radius: 20px; font-size: 14px; font-weight: 700; z-index: 110;
+    display: none; box-shadow: 0 0 18px rgba(80,255,140,0.5);
+}
+#tooltip {
+    position: fixed; padding: 6px 10px; background: rgba(0,0,0,0.88);
+    color: #fff; font-size: 11px; border-radius: 4px; pointer-events: none;
+    z-index: 200; display: none; white-space: nowrap;
+}
+#loading {
+    position: fixed; inset: 0; background: #0d1b2a;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    z-index: 999; color: #fff; font-size: 15px; gap: 12px;
+}
+#loading .spinner {
+    width: 36px; height: 36px; border: 3px solid rgba(255,255,255,0.2);
+    border-top-color: #4af; border-radius: 50%; animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
 </head>
 <body>
-    <div id="loading">
-        <div class="loader"></div>
-        <p>正在加载3D场景...</p>
+<div id="loading"><div class="spinner"></div>正在构建301罐区应急演练场景...</div>
+<div id="canvas-container"></div>
+<div id="header">
+    <h1>301原料油罐区 T301-2储罐火灾应急演练 · 3D模拟</h1>
+    <p>中石油燃料油温州分公司 · 生产一车间 · T301-2外浮顶罐30000m³浮盘密封圈火灾 · 参演人员4人</p>
+</div>
+<div id="ctrl-panel">
+    <button class="ctrl-btn" id="btn-start" onclick="startDrill()">开始演练</button>
+    <button class="ctrl-btn" id="btn-speed" onclick="toggleSpeed()">速度 ×1</button>
+    <button class="ctrl-btn" id="btn-reset" onclick="resetDrill()">重置</button>
+    <div class="view-btn" onclick="setView('overview')">全景总览</div>
+    <div class="view-btn" onclick="setView('fire')">着火罐近景</div>
+    <div class="view-btn" onclick="setView('pump')">泵房视角</div>
+    <div class="view-btn" onclick="setView('top')">俯视视图</div>
+    <div style="margin-top:6px;border-top:1px solid rgba(255,255,255,0.15);padding-top:6px;">
+        <div style="font-size:11px;color:#8af;margin-bottom:4px;">人员视角</div>
+        <div class="view-btn" onclick="camToPerson(0)" style="border-left:3px solid #1565c0;">班长</div>
+        <div class="view-btn" onclick="camToPerson(1)" style="border-left:3px solid #e65100;">计量员</div>
+        <div class="view-btn" onclick="camToPerson(2)" style="border-left:3px solid #2e7d32;">油槽工甲</div>
+        <div class="view-btn" onclick="camToPerson(3)" style="border-left:3px solid #b71c1c;">油槽工乙</div>
     </div>
+</div>
+<div id="phase-bar">
+    <h3>演练流程</h3>
+    <div class="phase-item" data-ph="0"><span class="dot"></span>巡检发现火情</div>
+    <div class="phase-item" data-ph="1"><span class="dot"></span>手动报警·关紧急切断阀</div>
+    <div class="phase-item" data-ph="2"><span class="dot"></span>汇报调度·启动喷淋</div>
+    <div class="phase-item" data-ph="3"><span class="dot"></span>停泵·关三级防控阀</div>
+    <div class="phase-item" data-ph="4"><span class="dot"></span>开启泡沫·灭火</div>
+    <div class="phase-item" data-ph="5"><span class="dot"></span>火势扑灭·演练结束</div>
+</div>
+<div id="event-log"><h3>演练事件记录</h3><div id="log-list"></div></div>
+<div id="status-panel">
+    <h3>实时状态</h3>
+    <div class="status-row"><span>T301-2浮盘温度</span><span class="val" id="st-temp">32°C</span></div>
+    <div class="status-row"><span>紧急切断阀</span><span class="val" id="st-valve">开启</span></div>
+    <div class="status-row"><span>输油泵状态</span><span class="val" id="st-pump">运行中</span></div>
+    <div class="status-row"><span>冷却水喷淋</span><span class="val" id="st-spray">未启动</span></div>
+    <div class="status-row"><span>泡沫系统</span><span class="val" id="st-foam">未启动</span></div>
+    <div class="status-row"><span>三级防控阀</span><span class="val" id="st-rain">开启</span></div>
+    <div class="status-row"><span>风向 · 上风口</span><span class="val safe" id="st-wind">西风3.2m/s · 西侧</span></div>
+    <div class="status-row"><span>演练用时</span><span class="val" id="st-time">--:--</span></div>
+</div>
+<div id="alarm-overlay"></div>
+<div id="alarm-banner">火警！T301-2浮盘密封圈着火</div>
+<div id="success-banner">✓ 火势已扑灭 · 无复燃 · 演练圆满成功</div>
+<div id="tooltip"></div>
 
-    <div id="header">
-        <h1>罐区火灾应急处置流程</h1>
-        <p>中石油燃料油（温州）分公司 · 安全培训</p>
-    </div>
+<script src="./three.min.js"></script>
+<script src="./OrbitControls.js"></script>
+<script>
+/* ============================================================================
+ * 301罐区T301-2火灾应急演练 3D模拟
+ * 罐区参数: T301-1~5 外浮顶罐 30000m³ D=40m H=17.5m
+ *           T301-6 内浮顶罐 10000m³ D=26m H=14m
+ * 布置: 2排×3列, 罐中心距64m(1.6D), DS=0.15
+ * 泵房: 原油泵房(8台泵P301-1/2/3/6/7/8/9/10), 位于防火墙东侧, 各罐管线汇入
+ * 应急人员: 4人 (班长/计量员/油槽工×2)
+ * ==========================================================================*/
+const DS = 0.15; // 显示比例: 1m = 0.15单位
+const S = m => m * DS; // 米→场景单位
 
-    <div id="hint">拖动旋转 · 双指缩放</div>
+// ---------- 罐区布局 ----------
+const TANK_D = 40, TANK_H = 17.5, GAP = 56; // 中心距
+// 北排(3罐, 均匀分布): T301-1(x=-84) / T301-6(x=0) / T301-3(x=84); 南排(4罐): T305-4 / T301-5 / T301-4 / T301-2(着火)
+// T305-4 与 T301-6 同规格(D26/H14), 位于南排最西头, 与北排 T301-1 相对、紧邻 T301-5; T305-4 管线独立(不接301总管)
+const TANKS = [
+    { id: 'T301-1', mx: -84, mz: -32, D: 40, H: 17.5, cap: 30000, type: 'ext_float' },
+    { id: 'T301-2', mx: 84, mz: 32, D: 40, H: 17.5, cap: 30000, type: 'ext_float', fire: true },
+    { id: 'T301-3', mx: 84, mz: -32, D: 26, H: 14, cap: 30000, type: 'ext_float' },
+    { id: 'T301-4', mx: 28, mz: 32, D: 26, H: 14, cap: 30000, type: 'ext_float' },
+    { id: 'T301-5', mx: -28, mz: 32, D: 26, H: 14, cap: 30000, type: 'ext_float' },
+    { id: 'T301-6', mx: 0, mz: -32, D: 26, H: 14, cap: 10000, type: 'int_float' },
+    { id: 'T305-4', mx: -84, mz: 32, D: 26, H: 14, cap: 10000, type: 'int_float' }
+];
+function tankPos(t) {
+    return { x: S(t.mx), z: S(t.mz) };
+}
+// 泵房位置(防火墙东侧, 长轴南北向; 各罐管线汇入)
+const PUMP = { x: S(132), z: S(-32), w: S(16), d: S(38), h: S(8) };
 
-    <div id="canvas-container"></div>
+// ---------- 全局状态 ----------
+let scene, camera, renderer, controls, clock;
+let drillRunning = false, drillTime = 0, speedMul = 1;
+let currentPhase = -1;
+let fireParticles, smokeParticles, spraySystems = [], foamParticles;
+let fireIntensity = 0, targetFireIntensity = 0;
+let personnel = [], valves = [], pumpImpellers = [];
+let alarmLights = [], fireGlow;
+let waterRingOn = false, foamOn = false;
+let rainValve = null, accidentValve = null, initRainValve = null; // 三级防控三阀
+let containValves = []; // [雨水外排阀, 事故水阀, 初期雨水阀]
+let rainTask = ''; // 关阀任务状态
+// 风向设定: 西风(自西向东吹, +x方向), 上风口在西侧 → 应急人员从西侧集结点(上风口)进入罐区
+const WIND = { x: 1, z: 0, name: '西风', speed: '3.2m/s', upwind: '西侧' };
+let windsock = null; // T301-4罐顶风向袋
+const pickables = [];
 
-    <div id="step-panel">
-        <div id="step-indicator"></div>
-        <div id="step-title"></div>
-        <div id="step-desc"></div>
-        <div id="step-controls">
-            <button class="btn btn-prev" onclick="prevStep()">上一步</button>
-            <button class="btn btn-auto" id="btn-auto" onclick="toggleAuto()">自动播放</button>
-            <button class="btn btn-next" onclick="nextStep()">下一步</button>
-        </div>
-    </div>
+// ---------- 初始化 ----------
+function init() {
+    clock = new THREE.Clock();
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x0d1b2a);
+    scene.fog = new THREE.FogExp2(0x0d1b2a, 0.0028);
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-    <script>
-    // ============ 场景配置 ============
-    const STEPS = [
-        {
-            title: "发现险情",
-            desc: "巡检人员发现T301-3外浮顶罐浮盘密封圈处起火，立即按下手动报警按钮，向中控室报告火情。",
-            camera: { x: 25, y: 18, z: 25, tx: 0, ty: 8, tz: 0 }
-        },
-        {
-            title: "启动应急预案",
-            desc: "中控室确认火情后，立即启动罐区火灾应急预案，通知应急指挥部，拨打119报警，同时广播疏散警报。",
-            camera: { x: 0, y: 30, z: 35, tx: 0, ty: 5, tz: 0 }
-        },
-        {
-            title: "关闭紧急切断阀",
-            desc: "操作人员远程关闭T301-3罐进出口紧急切断阀，切断油品来源，防止火势蔓延扩大。",
-            camera: { x: -15, y: 8, z: 15, tx: -8, ty: 3, tz: 0 }
-        },
-        {
-            title: "启动泡沫灭火系统",
-            desc: "启动固定式泡沫灭火系统，向T301-3罐内喷射泡沫覆盖液面，隔绝空气抑制燃烧。",
-            camera: { x: 12, y: 15, z: 12, tx: 0, ty: 10, tz: 0 }
-        },
-        {
-            title: "冷却相邻储罐",
-            desc: "开启相邻T301-2、T301-4罐的喷淋冷却水系统，防止热辐射引燃邻近储罐，避免连锁事故。",
-            camera: { x: -20, y: 20, z: 20, tx: 0, ty: 8, tz: 0 }
-        },
-        {
-            title: "人员疏散警戒",
-            desc: "无关人员沿上风方向紧急疏散至集合点，警戒组在罐区周围设置警戒线，禁止无关人员进入。",
-            camera: { x: 30, y: 12, z: -10, tx: 0, ty: 5, tz: 0 }
-        },
-        {
-            title: "消防协同处置",
-            desc: "消防队到场后，配合开展灭火作战，利用消防车移动炮和固定泡沫系统联合进攻，直至火灾扑灭。",
-            camera: { x: 0, y: 25, z: -30, tx: 0, ty: 8, tz: 0 }
-        }
-    ];
+    camera = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, 0.1, 800);
+    camera.position.set(S(160), S(110), S(180));
 
-    let scene, camera, renderer, controls;
-    let currentStep = 0;
-    let autoPlay = false;
-    let autoTimer = null;
-    let fireParticles = [], smokeParticles = [], foamParticles = [], waterParticles = [];
-    let tanks = [], valves = [], fireTruck;
-    let animationMixers = [];
-    let clock = new THREE.Clock();
+    renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+    renderer.setSize(innerWidth, innerHeight);
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 2.5));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.physicallyCorrectLights = true;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.25;
+    renderer.outputEncoding = THREE.sRGBEncoding;
+    document.getElementById('canvas-container').appendChild(renderer.domElement);
 
-    // ============ 初始化 ============
-    function init() {
-        scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x87CEEB);
-        scene.fog = new THREE.Fog(0x87CEEB, 80, 150);
+    controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.target.set(0, S(5), 0);
+    controls.maxPolarAngle = Math.PI / 2.02;
+    controls.minDistance = S(15);
+    controls.maxDistance = S(500);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.08;
 
-        camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 200);
-        camera.position.set(25, 18, 25);
-
-        renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        renderer.shadowMap.enabled = true;
-        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-        document.getElementById('canvas-container').appendChild(renderer.domElement);
-
-        controls = new THREE.OrbitControls(camera, renderer.domElement);
-        controls.enableDamping = true;
-        controls.dampingFactor = 0.05;
-        controls.maxPolarAngle = Math.PI / 2.1;
-        controls.minDistance = 10;
-        controls.maxDistance = 80;
-        controls.target.set(0, 8, 0);
-
-        setupLights();
-        createGround();
-        createTanks();
-        createPipes();
-        createFireEquipment();
-        createFireTruck();
-        createEnvironment();
-
-        // 初始隐藏火灾效果
-        setFireVisible(false);
-
-        // UI
-        buildStepIndicator();
-        showStep(0);
-
-        // 事件
-        window.addEventListener('resize', onResize);
-
-        // 隐藏加载
-        setTimeout(() => {
-            document.getElementById('loading').classList.add('hidden');
-            showHint();
-        }, 800);
-
-        animate();
-    }
-
-    // ============ 灯光 ============
-    function setupLights() {
-        const ambient = new THREE.AmbientLight(0xffffff, 0.5);
-        scene.add(ambient);
-
-        const sun = new THREE.DirectionalLight(0xffffff, 0.8);
-        sun.position.set(30, 40, 20);
-        sun.castShadow = true;
-        sun.shadow.mapSize.set(2048, 2048);
-        sun.shadow.camera.left = -50;
-        sun.shadow.camera.right = 50;
-        sun.shadow.camera.top = 50;
-        sun.shadow.camera.bottom = -50;
-        scene.add(sun);
-
-        const hemi = new THREE.HemisphereLight(0x87CEEB, 0x556633, 0.3);
-        scene.add(hemi);
-    }
-
-    // ============ 地面 ============
-    function createGround() {
-        // 主地面
-        const groundGeo = new THREE.PlaneGeometry(120, 120);
-        const groundMat = new THREE.MeshLambertMaterial({ color: 0x8B9467 });
-        const ground = new THREE.Mesh(groundGeo, groundMat);
-        ground.rotation.x = -Math.PI / 2;
-        ground.receiveShadow = true;
-        scene.add(ground);
-
-        // 罐区防火堤
-        const wallMat = new THREE.MeshLambertMaterial({ color: 0x999999 });
-        const wallH = 2.2, wallT = 0.6;
-        const areaW = 50, areaD = 30;
-        
-        const walls = [
-            { w: areaW, d: wallT, x: 0, z: -areaD/2 },
-            { w: areaW, d: wallT, x: 0, z: areaD/2 },
-            { w: wallT, d: areaD, x: -areaW/2, z: 0 },
-            { w: wallT, d: areaD, x: areaW/2, z: 0 }
-        ];
-        walls.forEach(w => {
-            const geo = new THREE.BoxGeometry(w.w, wallH, w.d);
-            const mesh = new THREE.Mesh(geo, wallMat);
-            mesh.position.set(w.x, wallH/2, w.z);
-            mesh.castShadow = true;
-            mesh.receiveShadow = true;
-            scene.add(mesh);
-        });
-
-        // 罐区地面（混凝土）
-        const concreteGeo = new THREE.PlaneGeometry(areaW, areaD);
-        const concreteMat = new THREE.MeshLambertMaterial({ color: 0xBBBBBB });
-        const concrete = new THREE.Mesh(concreteGeo, concreteMat);
-        concrete.rotation.x = -Math.PI / 2;
-        concrete.position.y = 0.02;
-        concrete.receiveShadow = true;
-        scene.add(concrete);
-    }
-
-    // ============ 储罐 ============
-    function createTanks() {
-        const tankConfigs = [
-            { x: -14, z: 0, r: 8, h: 14, name: "T301-2", type: "floating" },
-            { x: 0, z: 0, r: 8, h: 14, name: "T301-3", type: "floating", fire: true },
-            { x: 14, z: 0, r: 8, h: 14, name: "T301-4", type: "floating" }
-        ];
-
-        tankConfigs.forEach(cfg => {
-            const group = new THREE.Group();
-            group.position.set(cfg.x, 0, cfg.z);
-
-            // 罐体
-            const bodyGeo = new THREE.CylinderGeometry(cfg.r, cfg.r, cfg.h, 32);
-            const bodyMat = new THREE.MeshPhongMaterial({ 
-                color: 0xE8E8E8, 
-                specular: 0x333333,
-                shininess: 30
-            });
-            const body = new THREE.Mesh(bodyGeo, bodyMat);
-            body.position.y = cfg.h / 2;
-            body.castShadow = true;
-            body.receiveShadow = true;
-            group.add(body);
-
-            // 罐体条纹
-            for (let i = 1; i < 5; i++) {
-                const ringGeo = new THREE.TorusGeometry(cfg.r + 0.05, 0.08, 8, 32);
-                const ringMat = new THREE.MeshLambertMaterial({ color: 0x666666 });
-                const ring = new THREE.Mesh(ringGeo, ringMat);
-                ring.position.y = i * (cfg.h / 5);
-                ring.rotation.x = Math.PI / 2;
-                group.add(ring);
-            }
-
-            // 浮顶（外浮顶罐）
-            const roofGeo = new THREE.CylinderGeometry(cfg.r - 0.3, cfg.r - 0.3, 0.4, 32);
-            const roofMat = new THREE.MeshPhongMaterial({ color: 0xAAAAAA });
-            const roof = new THREE.Mesh(roofGeo, roofMat);
-            roof.position.y = cfg.h - 1;
-            roof.castShadow = true;
-            group.add(roof);
-
-            // 浮顶上的支柱
-            for (let i = 0; i < 4; i++) {
-                const angle = (i / 4) * Math.PI * 2;
-                const legGeo = new THREE.CylinderGeometry(0.1, 0.1, 2, 8);
-                const legMat = new THREE.MeshLambertMaterial({ color: 0x555555 });
-                const leg = new THREE.Mesh(legGeo, legMat);
-                leg.position.set(Math.cos(angle) * 3, cfg.h - 2, Math.sin(angle) * 3);
-                group.add(leg);
-            }
-
-            // 罐顶栏杆
-            const railGeo = new THREE.TorusGeometry(cfg.r, 0.06, 8, 32);
-            const railMat = new THREE.MeshLambertMaterial({ color: 0xFFCC00 });
-            const rail = new THREE.Mesh(railGeo, railMat);
-            rail.position.y = cfg.h + 0.5;
-            rail.rotation.x = Math.PI / 2;
-            group.add(rail);
-
-            // 梯子
-            const ladderGroup = new THREE.Group();
-            for (let i = 0; i < 14; i++) {
-                const rungGeo = new THREE.BoxGeometry(0.8, 0.06, 0.06);
-                const rungMat = new THREE.MeshLambertMaterial({ color: 0x444444 });
-                const rung = new THREE.Mesh(rungGeo, rungMat);
-                rung.position.y = i + 0.5;
-                ladderGroup.add(rung);
-            }
-            const railL = new THREE.Mesh(new THREE.BoxGeometry(0.06, 14, 0.06), new THREE.MeshLambertMaterial({color: 0x444444}));
-            railL.position.set(-0.4, 7, 0);
-            ladderGroup.add(railL);
-            const railR = railL.clone();
-            railR.position.x = 0.4;
-            ladderGroup.add(railR);
-            ladderGroup.position.set(cfg.r + 0.3, 0, 0);
-            group.add(ladderGroup);
-
-            // 编号标牌
-            const labelCanvas = document.createElement('canvas');
-            labelCanvas.width = 256;
-            labelCanvas.height = 64;
-            const ctx = labelCanvas.getContext('2d');
-            ctx.fillStyle = '#003366';
-            ctx.fillRect(0, 0, 256, 64);
-            ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 28px Microsoft YaHei';
-            ctx.textAlign = 'center';
-            ctx.fillText(cfg.name, 128, 42);
-            const labelTex = new THREE.CanvasTexture(labelCanvas);
-            const labelGeo = new THREE.PlaneGeometry(4, 1);
-            const labelMat = new THREE.MeshBasicMaterial({ map: labelTex });
-            const label = new THREE.Mesh(labelGeo, labelMat);
-            label.position.set(0, cfg.h * 0.6, cfg.r + 0.1);
-            group.add(label);
-
-            // 火灾效果（仅T301-3）
-            if (cfg.fire) {
-                createFireEffect(group, cfg.r, cfg.h);
-                createSmokeEffect(group, cfg.r, cfg.h);
-            }
-
-            scene.add(group);
-            tanks.push({ group, config: cfg });
-        });
-    }
-
-    // ============ 火焰粒子 ============
-    function createFireEffect(parent, radius, height) {
-        const particleCount = 200;
-        const geometry = new THREE.BufferGeometry();
-        const positions = new Float32Array(particleCount * 3);
-        const colors = new Float32Array(particleCount * 3);
-        const sizes = new Float32Array(particleCount);
-        const velocities = [];
-
-        for (let i = 0; i < particleCount; i++) {
-            const angle = Math.random() * Math.PI * 2;
-            const r = Math.random() * (radius - 1);
-            positions[i*3] = Math.cos(angle) * r;
-            positions[i*3+1] = height - 1 + Math.random() * 3;
-            positions[i*3+2] = Math.sin(angle) * r;
-
-            const t = Math.random();
-            colors[i*3] = 1.0;
-            colors[i*3+1] = 0.3 + t * 0.5;
-            colors[i*3+2] = 0.0;
-
-            sizes[i] = 0.5 + Math.random() * 1.5;
-            velocities.push({
-                x: (Math.random() - 0.5) * 0.02,
-                y: 0.05 + Math.random() * 0.1,
-                z: (Math.random() - 0.5) * 0.02,
-                life: Math.random()
-            });
-        }
-
-        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-        geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
-
-        const material = new THREE.PointsMaterial({
-            size: 1.2,
-            vertexColors: true,
-            transparent: true,
-            opacity: 0.8,
-            blending: THREE.AdditiveBlending,
-            depthWrite: false
-        });
-
-        const points = new THREE.Points(geometry, material);
-        points.userData = { velocities, radius, height };
-        parent.add(points);
-        fireParticles.push(points);
-    }
-
-    // ============ 烟雾粒子 ============
-    function createSmokeEffect(parent, radius, height) {
-        const particleCount = 80;
-        const geometry = new THREE.BufferGeometry();
-        const positions = new Float32Array(particleCount * 3);
-        const velocities = [];
-
-        for (let i = 0; i < particleCount; i++) {
-            const angle = Math.random() * Math.PI * 2;
-            const r = Math.random() * radius * 0.5;
-            positions[i*3] = Math.cos(angle) * r;
-            positions[i*3+1] = height + 2 + Math.random() * 8;
-            positions[i*3+2] = Math.sin(angle) * r;
-            velocities.push({
-                x: (Math.random() - 0.5) * 0.03 + 0.02,
-                y: 0.03 + Math.random() * 0.05,
-                z: (Math.random() - 0.5) * 0.03,
-                life: Math.random()
-            });
-        }
-
-        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-
-        const material = new THREE.PointsMaterial({
-            size: 3,
-            color: 0x333333,
-            transparent: true,
-            opacity: 0.4,
-            depthWrite: false
-        });
-
-        const points = new THREE.Points(geometry, material);
-        points.userData = { velocities, radius, height };
-        parent.add(points);
-        smokeParticles.push(points);
-    }
-
-    // ============ 管道 ============
-    function createPipes() {
-        const pipeMat = new THREE.MeshPhongMaterial({ color: 0x4477AA, specular: 0x222222 });
-        
-        // 主管道
-        const mainPipeGeo = new THREE.CylinderGeometry(0.3, 0.3, 40, 12);
-        const mainPipe = new THREE.Mesh(mainPipeGeo, pipeMat);
-        mainPipe.rotation.z = Math.PI / 2;
-        mainPipe.position.set(0, 1.5, 10);
-        mainPipe.castShadow = true;
-        scene.add(mainPipe);
-
-        // 支管到各罐
-        [-14, 0, 14].forEach(x => {
-            const branchGeo = new THREE.CylinderGeometry(0.2, 0.2, 10, 12);
-            const branch = new THREE.Mesh(branchGeo, pipeMat);
-            branch.rotation.x = Math.PI / 2;
-            branch.position.set(x, 1.5, 5);
-            branch.castShadow = true;
-            scene.add(branch);
-
-            // 紧急切断阀
-            const valveGroup = new THREE.Group();
-            const valveBody = new THREE.Mesh(
-                new THREE.SphereGeometry(0.5, 12, 12),
-                new THREE.MeshPhongMaterial({ color: 0xCC3333 })
-            );
-            valveGroup.add(valveBody);
-            const handle = new THREE.Mesh(
-                new THREE.CylinderGeometry(0.06, 0.06, 1.2, 8),
-                new THREE.MeshLambertMaterial({ color: 0xFFCC00 })
-            );
-            handle.position.y = 0.6;
-            valveGroup.add(handle);
-            const wheel = new THREE.Mesh(
-                new THREE.TorusGeometry(0.35, 0.05, 8, 16),
-                new THREE.MeshLambertMaterial({ color: 0xFFCC00 })
-            );
-            wheel.position.y = 1.2;
-            valveGroup.add(wheel);
-            valveGroup.position.set(x, 1.5, 8);
-            scene.add(valveGroup);
-            valves.push(valveGroup);
-        });
-    }
-
-    // ============ 消防设施 ============
-    function createFireEquipment() {
-        // 泡沫管线
-        const foamPipeMat = new THREE.MeshPhongMaterial({ color: 0xCC4444 });
-        [-14, 0, 14].forEach(x => {
-            const pipeGeo = new THREE.CylinderGeometry(0.15, 0.15, 16, 8);
-            const pipe = new THREE.Mesh(pipeGeo, foamPipeMat);
-            pipe.position.set(x + 3, 8, 3);
-            scene.add(pipe);
-
-            // 泡沫喷射口
-            const nozzle = new THREE.Mesh(
-                new THREE.ConeGeometry(0.3, 0.6, 8),
-                new THREE.MeshPhongMaterial({ color: 0xDD5555 })
-            );
-            nozzle.position.set(x + 3, 16, 3);
-            nozzle.rotation.x = Math.PI;
-            scene.add(nozzle);
-        });
-
-        // 消防栓
-        const hydrantMat = new THREE.MeshPhongMaterial({ color: 0xDD2222 });
-        [[-20, 12], [20, 12], [-20, -12], [20, -12]].forEach(([x, z]) => {
-            const hydrant = new THREE.Group();
-            const body = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.35, 1.2, 12), hydrantMat);
-            body.position.y = 0.6;
-            hydrant.add(body);
-            const cap = new THREE.Mesh(new THREE.SphereGeometry(0.3, 12, 8), hydrantMat);
-            cap.position.y = 1.3;
-            hydrant.add(cap);
-            hydrant.position.set(x, 0, z);
-            scene.add(hydrant);
-        });
-    }
-
-    // ============ 消防车 ============
-    function createFireTruck() {
-        fireTruck = new THREE.Group();
-        
-        // 车身
-        const bodyMat = new THREE.MeshPhongMaterial({ color: 0xCC2222 });
-        const body = new THREE.Mesh(new THREE.BoxGeometry(6, 2.5, 2.5), bodyMat);
-        body.position.y = 2;
-        body.castShadow = true;
-        fireTruck.add(body);
-
-        // 驾驶室
-        const cab = new THREE.Mesh(new THREE.BoxGeometry(2, 2, 2.3), bodyMat);
-        cab.position.set(-3, 1.8, 0);
-        cab.castShadow = true;
-        fireTruck.add(cab);
-
-        // 窗户
-        const glassMat = new THREE.MeshPhongMaterial({ color: 0x88CCFF, transparent: true, opacity: 0.6 });
-        const windshield = new THREE.Mesh(new THREE.PlaneGeometry(1.8, 1.2), glassMat);
-        windshield.position.set(-4.01, 2.2, 0);
-        windshield.rotation.y = -Math.PI / 2;
-        fireTruck.add(windshield);
-
-        // 轮子
-        const wheelGeo = new THREE.CylinderGeometry(0.6, 0.6, 0.4, 16);
-        const wheelMat = new THREE.MeshLambertMaterial({ color: 0x222222 });
-        [[-2, -1.3], [-2, 1.3], [1.5, -1.3], [1.5, 1.3]].forEach(([x, z]) => {
-            const wheel = new THREE.Mesh(wheelGeo, wheelMat);
-            wheel.rotation.x = Math.PI / 2;
-            wheel.position.set(x, 0.6, z);
-            fireTruck.add(wheel);
-        });
-
-        // 水炮
-        const cannon = new THREE.Mesh(
-            new THREE.CylinderGeometry(0.12, 0.15, 3, 8),
-            new THREE.MeshPhongMaterial({ color: 0x888888 })
+    // 灯光 - 夜间场景(演练设定为夜间巡检发现火情) — 电影级布光
+    const hemi = new THREE.HemisphereLight(0x2244668, 0x1a1a2e, 0.7);
+    scene.add(hemi);
+    scene.add(new THREE.AmbientLight(0x223344, 0.25));
+    const moon = new THREE.DirectionalLight(0x8899cc, 0.5);
+    moon.position.set(S(-100), S(150), S(-60));
+    moon.castShadow = true;
+    moon.shadow.mapSize.set(4096, 4096);
+    moon.shadow.camera.left = -S(200); moon.shadow.camera.right = S(200);
+    moon.shadow.camera.top = S(200); moon.shadow.camera.bottom = -S(200);
+    moon.shadow.camera.near = S(10); moon.shadow.camera.far = S(500);
+    moon.shadow.bias = -0.0003;
+    moon.shadow.normalBias = 0.02;
+    scene.add(moon);
+    // 补光: 暖色(火场方向) + 冷色轮廓光
+    const fillWarm = new THREE.DirectionalLight(0xff6633, 0.12);
+    fillWarm.position.set(S(80), S(40), S(60));
+    scene.add(fillWarm);
+    const rimCool = new THREE.DirectionalLight(0x4488cc, 0.15);
+    rimCool.position.set(S(-60), S(30), S(-120));
+    scene.add(rimCool);
+    // 罐区照明灯(高杆灯) — physicallyCorrectLights下用candela
+    [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([sx, sz], i) => {
+        const pl = new THREE.PointLight(0xffeedd, 90, S(150), 2);
+        pl.position.set(sx * S(85), S(25), sz * S(75));
+        if (i === 0) { pl.castShadow = true; pl.shadow.mapSize.set(1024, 1024); pl.shadow.bias = -0.001; }
+        scene.add(pl);
+        // 灯杆
+        const pole = new THREE.Mesh(
+            new THREE.CylinderGeometry(S(0.3), S(0.4), S(25), 8),
+            new THREE.MeshStandardMaterial({ color: 0x556677, roughness: 0.5, metalness: 0.6 })
         );
-        cannon.rotation.z = -Math.PI / 4;
-        cannon.position.set(1, 4, 0);
-        fireTruck.add(cannon);
-
-        // 警灯
-        const lightBar = new THREE.Mesh(
-            new THREE.BoxGeometry(1.5, 0.3, 1),
-            new THREE.MeshBasicMaterial({ color: 0xFF0000 })
-        );
-        lightBar.position.set(-3, 3, 0);
-        fireTruck.add(lightBar);
-
-        fireTruck.position.set(0, 0, -22);
-        fireTruck.visible = false;
-        scene.add(fireTruck);
-    }
-
-    // ============ 环境 ============
-    function createEnvironment() {
-        // 远处建筑
-        const buildingMat = new THREE.MeshLambertMaterial({ color: 0x778899 });
-        [[-40, -30, 8, 12, 6], [40, -25, 6, 8, 5], [-35, 30, 10, 6, 8]].forEach(([x, z, w, h, d]) => {
-            const building = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), buildingMat);
-            building.position.set(x, h/2, z);
-            building.castShadow = true;
-            scene.add(building);
-        });
-
-        // 集合点标志
-        const poleMat = new THREE.MeshLambertMaterial({ color: 0x339933 });
-        const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 3, 8), poleMat);
-        pole.position.set(35, 1.5, 0);
+        pole.position.set(sx * S(85), S(12.5), sz * S(75));
         scene.add(pole);
-        
-        const signCanvas = document.createElement('canvas');
-        signCanvas.width = 128;
-        signCanvas.height = 128;
-        const sctx = signCanvas.getContext('2d');
-        sctx.fillStyle = '#009933';
-        sctx.fillRect(0, 0, 128, 128);
-        sctx.fillStyle = '#ffffff';
-        sctx.font = 'bold 20px sans-serif';
-        sctx.textAlign = 'center';
-        sctx.fillText('紧急', 64, 50);
-        sctx.fillText('集合点', 64, 80);
-        const signTex = new THREE.CanvasTexture(signCanvas);
-        const sign = new THREE.Mesh(
-            new THREE.PlaneGeometry(1.5, 1.5),
-            new THREE.MeshBasicMaterial({ map: signTex })
+        const lamp = new THREE.Mesh(
+            new THREE.SphereGeometry(S(1.2), 8, 8),
+            new THREE.MeshBasicMaterial({ color: 0xffeedd })
         );
-        sign.position.set(35, 3.5, 0);
-        scene.add(sign);
+        lamp.position.set(sx * S(85), S(25), sz * S(75));
+        scene.add(lamp);
+    });
+
+    buildGround();
+    buildDike();
+    buildTanks();
+    buildEntries();
+    buildPumpRoom();
+    buildPipelines();
+    buildPersonnel();
+    buildFireSystems();
+    buildAlarmDevices();
+
+    // 环境反射贴图(PMREMGenerator生成渐变天空)
+    const pmrem = new THREE.PMREMGenerator(renderer);
+    pmrem.compileCubemapShader();
+    const envScene = new THREE.Scene();
+    envScene.background = new THREE.Color(0x0d1b2a);
+    const envHemi = new THREE.HemisphereLight(0x334466, 0x111122, 1.0);
+    envScene.add(envHemi);
+    const envRT = pmrem.fromScene(envScene, 0.04);
+    scene.environment = envRT.texture;
+    pmrem.dispose();
+
+    setView('overview');
+    window.addEventListener('resize', onResize);
+    renderer.domElement.addEventListener('mousemove', onHover);
+    document.getElementById('loading').style.display = 'none';
+    animate();
+}
+
+// ---------- 地面 ----------
+function buildGround() {
+    const ground = new THREE.Mesh(
+        new THREE.PlaneGeometry(S(600), S(600)),
+        new THREE.MeshStandardMaterial({ color: 0x1a2634, roughness: 0.92, metalness: 0.0 })
+    );
+    ground.rotation.x = -Math.PI / 2;
+    ground.position.y = -0.02;
+    ground.receiveShadow = true;
+    scene.add(ground);
+    // 罐区硬化地坪
+    const pad = new THREE.Mesh(
+        new THREE.PlaneGeometry(S(232), S(148)),
+        new THREE.MeshStandardMaterial({ color: 0x2a3442, roughness: 0.88, metalness: 0.02 })
+    );
+    pad.rotation.x = -Math.PI / 2;
+    pad.position.set(0, 0.01, 0);
+    pad.receiveShadow = true;
+    scene.add(pad);
+    // 泵房区域地坪(位于防火墙与东消防通道之间的缓冲区内)
+    const ppad = new THREE.Mesh(
+        new THREE.PlaneGeometry(S(20), S(42)),
+        new THREE.MeshStandardMaterial({ color: 0x2a3442, roughness: 0.88, metalness: 0.02 })
+    );
+    ppad.rotation.x = -Math.PI / 2;
+    ppad.position.set(PUMP.x, 0.025, PUMP.z);
+    scene.add(ppad);
+
+    // ---------- 罐区四周消防通道 ----------
+    const roadMat = new THREE.MeshStandardMaterial({ color: 0x4d5a68, roughness: 0.95, metalness: 0.0 });
+    const lineMat = new THREE.MeshBasicMaterial({ color: 0xe0a800 });
+    const road = (cx, cz, w, d) => {
+        const r = new THREE.Mesh(new THREE.PlaneGeometry(w, d), roadMat);
+        r.rotation.x = -Math.PI / 2; r.position.set(cx, 0.02, cz); r.receiveShadow = true;
+        scene.add(r);
+    };
+    const roadLine = (cx, cz, w, d) => {
+        const l = new THREE.Mesh(new THREE.PlaneGeometry(w, d), lineMat);
+        l.rotation.x = -Math.PI / 2; l.position.set(cx, 0.03, cz);
+        scene.add(l);
+    };
+    // 北/南消防通道: 贴防火墙外侧, 东西向贯通
+    road(S(11), -S(84.5), S(286), S(9));
+    road(S(11), S(84.5), S(286), S(9));
+    // 西消防通道: 贴西防火墙外侧
+    road(-S(127), 0, S(9), S(178));
+    // 东消防通道: 位于泵房外侧(泵房与防火墙之间为绿化带, 不贴防火墙)
+    road(S(149.5), 0, S(9), S(178));
+    // 黄色边线
+    roadLine(S(11), -S(80.7), S(286), S(0.35)); roadLine(S(11), -S(88.3), S(286), S(0.35));
+    roadLine(S(11), S(80.7), S(286), S(0.35)); roadLine(S(11), S(88.3), S(286), S(0.35));
+    roadLine(-S(123.2), 0, S(0.35), S(178)); roadLine(-S(130.8), 0, S(0.35), S(178));
+    roadLine(S(145.7), 0, S(0.35), S(178)); roadLine(S(153.3), 0, S(0.35), S(178));
+    // 消防通道标注
+    [[0, -84.5], [0, 84.5], [-127, 0], [149.5, 0]].forEach(([rx, rz]) => {
+        const rl = makeLabel('消防通道', '#ffd54f');
+        rl.position.set(S(rx), S(3), S(rz));
+        rl.scale.set(S(12), S(4.5), 1);
+        scene.add(rl);
+    });
+
+    // ---------- 东侧绿化带(防火墙与东消防通道之间, 泵房南北两侧) ----------
+    const greenMat = new THREE.MeshStandardMaterial({ color: 0x2f5d33, roughness: 1.0, metalness: 0.0 });
+    const green = (cx, cz, w, d) => {
+        const g = new THREE.Mesh(new THREE.PlaneGeometry(w, d), greenMat);
+        g.rotation.x = -Math.PI / 2; g.position.set(cx, 0.015, cz); g.receiveShadow = true;
+        scene.add(g);
+    };
+    green(S(132.5), -S(66.5), S(23), S(27)); // 泵房以北
+    green(S(132.5), S(34.5), S(23), S(91));  // 泵房以南
+    // 绿化带树木
+    [[126, -60], [138, -70], [128, 20], [137, 50], [131, 70]].forEach(([tx, tz]) => {
+        const trunk = new THREE.Mesh(new THREE.CylinderGeometry(S(0.3), S(0.4), S(3), 6),
+            new THREE.MeshStandardMaterial({ color: 0x5d4037, roughness: 0.9 }));
+        trunk.position.set(S(tx), S(1.5), S(tz));
+        scene.add(trunk);
+        const crown = new THREE.Mesh(new THREE.SphereGeometry(S(2.2), 8, 6),
+            new THREE.MeshStandardMaterial({ color: 0x388e3c, roughness: 0.9 }));
+        crown.position.set(S(tx), S(4.2), S(tz));
+        crown.castShadow = true;
+        scene.add(crown);
+    });
+}
+
+// ---------- 防火墙 ----------
+function buildDike() {
+    const w = S(240), d = S(155), t = S(1.5), h = S(3.5);
+    const mat = new THREE.MeshStandardMaterial({ color: 0x6b7280, roughness: 0.85, metalness: 0.05 });
+    const capMat = new THREE.MeshStandardMaterial({ color: 0x9ca3af, roughness: 0.7, metalness: 0.1 });
+    const mk = (len, px, pz, ry) => {
+        const m = new THREE.Mesh(new THREE.BoxGeometry(len, h, t), mat);
+        m.position.set(px, h / 2, pz);
+        m.rotation.y = ry;
+        m.castShadow = true; m.receiveShadow = true;
+        scene.add(m);
+        // 墙顶压顶
+        const cap = new THREE.Mesh(new THREE.BoxGeometry(len, S(0.3), t + S(0.4)), capMat);
+        cap.position.set(px, h + S(0.15), pz);
+        cap.rotation.y = ry;
+        scene.add(cap);
+    };
+    mk(w, 0, -d / 2, 0); mk(w, 0, d / 2, 0);
+    mk(d, -w / 2, 0, Math.PI / 2); mk(d, w / 2, 0, Math.PI / 2);
+    // 防火墙标注
+    const lblN = makeLabel('防火墙', '#d1d5db');
+    lblN.position.set(0, S(5.5), -d / 2);
+    lblN.scale.set(S(10), S(4), 1);
+    scene.add(lblN);
+    const lblS = makeLabel('防火墙', '#d1d5db');
+    lblS.position.set(0, S(5.5), d / 2);
+    lblS.scale.set(S(10), S(4), 1);
+    scene.add(lblS);
+    const lblW = makeLabel('防火墙', '#d1d5db');
+    lblW.position.set(-w / 2, S(5.5), 0);
+    lblW.scale.set(S(10), S(4), 1);
+    scene.add(lblW);
+    const lblE = makeLabel('防火墙', '#d1d5db');
+    lblE.position.set(w / 2, S(5.5), 0);
+    lblE.scale.set(S(10), S(4), 1);
+    scene.add(lblE);
+}
+
+// ---------- 储罐 ----------
+function makeTank(t) {
+    const grp = new THREE.Group();
+    const r = S(t.D / 2), h = S(t.H);
+    // 罐体
+    const body = new THREE.Mesh(
+        new THREE.CylinderGeometry(r, r, h, 48),
+        new THREE.MeshStandardMaterial({ color: 0x7a838c, roughness: 0.6, metalness: 0.3 })
+    );
+    body.position.y = h / 2;
+    body.castShadow = true; body.receiveShadow = true;
+    grp.add(body);
+    // 加强圈
+    for (let i = 1; i <= 3; i++) {
+        const ring = new THREE.Mesh(
+            new THREE.TorusGeometry(r + S(0.15), S(0.25), 8, 48),
+            new THREE.MeshStandardMaterial({ color: 0x5a636c, roughness: 0.55, metalness: 0.5 })
+        );
+        ring.rotation.x = Math.PI / 2;
+        ring.position.y = h * i / 4;
+        grp.add(ring);
     }
-
-    // ============ 火灾可见性 ============
-    function setFireVisible(visible) {
-        fireParticles.forEach(p => p.visible = visible);
-        smokeParticles.forEach(p => p.visible = visible);
+    if (t.type === 'ext_float') {
+        // 外浮顶: 浮盘(略低于罐壁顶)
+        const roof = new THREE.Mesh(
+            new THREE.CylinderGeometry(r * 0.97, r * 0.97, S(0.8), 48),
+            new THREE.MeshStandardMaterial({ color: 0x4d565f, roughness: 0.5, metalness: 0.4 })
+        );
+        roof.position.y = h - S(1.5);
+        grp.add(roof);
+        // 密封圈(着火部位!)
+        const seal = new THREE.Mesh(
+            new THREE.TorusGeometry(r * 0.985, S(0.6), 8, 48),
+            new THREE.MeshStandardMaterial({ color: 0x222629, roughness: 0.8, metalness: 0.1 })
+        );
+        seal.rotation.x = Math.PI / 2;
+        seal.position.y = h - S(1.2);
+        grp.add(seal);
+        // 浮顶中央排水管
+        const drain = new THREE.Mesh(
+            new THREE.CylinderGeometry(S(0.4), S(0.4), S(2), 8),
+            new THREE.MeshStandardMaterial({ color: 0x556066, roughness: 0.5, metalness: 0.55 })
+        );
+        drain.position.y = h - S(0.5);
+        grp.add(drain);
+    } else {
+        // 内浮顶: 拱顶+内浮盘
+        const dome = new THREE.Mesh(
+            new THREE.SphereGeometry(r, 32, 12, 0, Math.PI * 2, 0, Math.PI / 2.8),
+            new THREE.MeshStandardMaterial({ color: 0x5a6a78, roughness: 0.5, metalness: 0.3 })
+        );
+        dome.scale.y = 0.32;
+        dome.position.y = h;
+        grp.add(dome);
     }
+    // 盘梯
+    const stairGrp = new THREE.Group();
+    for (let i = 0; i < 12; i++) {
+        const step = new THREE.Mesh(
+            new THREE.BoxGeometry(S(2.5), S(0.15), S(0.8)),
+            new THREE.MeshStandardMaterial({ color: 0x667078, roughness: 0.5, metalness: 0.6 })
+        );
+        const ang = i * 0.22 + Math.PI * 0.6;
+        step.position.set(Math.cos(ang) * (r + S(1.2)), h * (i + 1) / 13, Math.sin(ang) * (r + S(1.2)));
+        step.rotation.y = -ang;
+        stairGrp.add(step);
+    }
+    grp.add(stairGrp);
+    // 罐名牌(3D文字用sprite)
+    const capTxt = (t.cap === 30000 ? '30000m³原油' : '10000m³原油');
+    const typeTxt = (t.type === 'ext_float' ? '外浮顶罐' : '内浮顶罐');
+    const label = makeLabel(t.id + '\n' + capTxt, t.fire ? '#ff6644' : '#88ccff');
+    label.position.y = h + S(6);
+    label.scale.set(S(14), S(7), 1);
+    grp.add(label);
 
-    // ============ 泡沫效果 ============
-    function createFoamEffect() {
-        clearFoam();
-        const tank = tanks[1]; // T301-3
-        if (!tank) return;
-        const particleCount = 100;
-        const geometry = new THREE.BufferGeometry();
-        const positions = new Float32Array(particleCount * 3);
-        const velocities = [];
+    const pos = tankPos(t);
+    grp.position.set(pos.x, 0, pos.z);
+    grp.traverse(o => { o.userData.label = t.id + ' ' + typeTxt + (t.cap === 30000 ? '30000m³' : '10000m³'); });
+    scene.add(grp);
+    pickables.push(...grp.children.filter(o => o.isMesh));
+    return grp;
+}
 
-        for (let i = 0; i < particleCount; i++) {
-            positions[i*3] = 3 + (Math.random() - 0.5) * 2;
-            positions[i*3+1] = 16;
-            positions[i*3+2] = 3 + (Math.random() - 0.5) * 2;
-            velocities.push({
-                x: (Math.random() - 0.5) * 0.1,
-                y: -0.1 - Math.random() * 0.05,
-                z: (Math.random() - 0.5) * 0.1,
-                life: Math.random()
-            });
+let tankGroups = {};
+function buildTanks() {
+    TANKS.forEach(t => { tankGroups[t.id] = makeTank(t); });
+}
+
+// ---------- 风向标(T301-4罐顶) ----------
+function buildWindsock() {
+    const t4 = TANKS.find(tk => tk.id === 'T301-4');
+    const pos = tankPos(t4);
+    const topY = S(t4.H);
+    const grp = new THREE.Group();
+    const poleMat = new THREE.MeshStandardMaterial({ color: 0xcfd8dc, roughness: 0.35, metalness: 0.7 });
+    // 立杆(罐顶)
+    const pole = new THREE.Mesh(new THREE.CylinderGeometry(S(0.14), S(0.22), S(7), 8), poleMat);
+    pole.position.y = S(3.5);
+    pole.castShadow = true;
+    grp.add(pole);
+    // 风向袋: 截锥, 轴旋转至x向; 大口朝上风口(西/-x), 小口指向下风口(东/+x)
+    const sock = new THREE.Mesh(
+        new THREE.CylinderGeometry(S(0.32), S(1.25), S(5.2), 14, 1, true),
+        new THREE.MeshStandardMaterial({ color: 0xff6d00, roughness: 0.65, metalness: 0.05, side: THREE.DoubleSide })
+    );
+    sock.rotation.z = -Math.PI / 2;      // +y(小口)→+x(东), -y(大口)→-x(西)
+    sock.position.set(S(2.6), S(7), 0);  // 自杆顶向下风口延伸
+    sock.castShadow = true;
+    grp.add(sock);
+    // 白色条纹环(贴合锥面)
+    [[S(1.2), S(1.03)], [S(3.4), S(0.64)]].forEach(([off, rr]) => {
+        const stripe = new THREE.Mesh(new THREE.TorusGeometry(rr, S(0.09), 8, 18), new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.6, metalness: 0.0 }));
+        stripe.rotation.y = Math.PI / 2;
+        stripe.position.set(off, S(7), 0);
+        grp.add(stripe);
+    });
+    // 大口环(上风口侧, 杆顶)
+    const mouth = new THREE.Mesh(new THREE.TorusGeometry(S(1.25), S(0.1), 8, 18), new THREE.MeshStandardMaterial({ color: 0xffd54f, roughness: 0.5, metalness: 0.2 }));
+    mouth.rotation.y = Math.PI / 2;
+    mouth.position.set(S(0.05), S(7), 0);
+    grp.add(mouth);
+    grp.position.set(pos.x, topY, pos.z);
+    grp.traverse(o => { o.userData.label = '风向标 (T301-4罐顶) · ' + WIND.name + ' ' + WIND.speed; });
+    scene.add(grp);
+    windsock = sock;
+    pickables.push(sock);
+    const wLabel = makeLabel('风向标\n' + WIND.name + ' ' + WIND.speed + ' · 上风口' + WIND.upwind, '#ffcc80');
+    wLabel.position.set(pos.x, topY + S(11.5), pos.z);
+    wLabel.scale.set(S(15), S(7.5), 1);
+    scene.add(wLabel);
+}
+
+// ---------- 进罐入口(T301-1~5及泵房) ----------
+function makeWallStair(x, z, ry) {
+    const grp = new THREE.Group();
+    const wallH = S(3.5), stairW = S(3), stepRise = S(0.5), stepTread = S(0.8);
+    const nSteps = 7; // 每侧7级台阶
+    const stepMat = new THREE.MeshStandardMaterial({ color: 0x78909c, roughness: 0.7, metalness: 0.2 });
+    const railMat = new THREE.MeshStandardMaterial({ color: 0xffc107, roughness: 0.4, metalness: 0.4 });
+    const platMat = new THREE.MeshStandardMaterial({ color: 0x607d8b, roughness: 0.6, metalness: 0.2 });
+    // 平台(墙顶)
+    const plat = new THREE.Mesh(new THREE.BoxGeometry(stairW, S(0.25), S(2.2)), platMat);
+    plat.position.set(0, wallH, 0);
+    plat.castShadow = true;
+    grp.add(plat);
+    // 两侧台阶
+    [-1, 1].forEach(side => {
+        for (let i = 0; i < nSteps; i++) {
+            const step = new THREE.Mesh(new THREE.BoxGeometry(stairW, stepRise, stepTread), stepMat);
+            const sy = wallH - (i + 1) * stepRise + stepRise / 2;
+            const sz = side * (S(1.1) + i * stepTread + stepTread / 2);
+            step.position.set(0, sy, sz);
+            step.castShadow = true; step.receiveShadow = true;
+            grp.add(step);
         }
-        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-        const material = new THREE.PointsMaterial({
-            size: 0.8,
-            color: 0xFFFFEE,
-            transparent: true,
-            opacity: 0.9,
-            depthWrite: false
+        // 扶手(两侧各一根斜杆+立柱)
+        [-1, 1].forEach(lr => {
+            const railX = lr * (stairW / 2 - S(0.15));
+            // 外侧扶手斜杆
+            const railLen = Math.sqrt(Math.pow(wallH, 2) + Math.pow(nSteps * stepTread, 2));
+            const rail = new THREE.Mesh(new THREE.CylinderGeometry(S(0.08), S(0.08), railLen, 6), railMat);
+            const midY = wallH / 2 + S(0.5);
+            const midZ = side * (S(1.1) + nSteps * stepTread / 2);
+            rail.position.set(railX, midY, midZ);
+            rail.rotation.x = side * Math.atan2(wallH, nSteps * stepTread);
+            grp.add(rail);
+            // 平台处立柱
+            const post = new THREE.Mesh(new THREE.CylinderGeometry(S(0.08), S(0.08), S(1.2), 6), railMat);
+            post.position.set(railX, wallH + S(0.6), side * S(0.9));
+            grp.add(post);
         });
-        const points = new THREE.Points(geometry, material);
-        points.userData = { velocities };
+        // 平台横杆
+        const topRail = new THREE.Mesh(new THREE.CylinderGeometry(S(0.07), S(0.07), stairW, 6), railMat);
+        topRail.rotation.z = Math.PI / 2;
+        topRail.position.set(0, wallH + S(1.1), side * S(0.9));
+        grp.add(topRail);
+    });
+    // 标识
+    const sign = makeLabel('楼梯入口', '#69f0ae');
+    sign.position.set(0, wallH + S(2.5), 0);
+    sign.scale.set(S(8), S(3.5), 1);
+    grp.add(sign);
+    grp.position.set(x, 0, z);
+    if (ry) grp.rotation.y = ry;
+    grp.traverse(o => { if (!o.userData.label) o.userData.label = '防火墙楼梯入口'; });
+    scene.add(grp);
+    return grp;
+}
+function buildEntries() {
+    const wallX = S(120), wallZ = S(77.5);
+    // 西防火墙: T301-1侧(z=-32) 与 T305-4侧(z=32)
+    makeWallStair(-wallX, S(-32), Math.PI / 2);
+    makeWallStair(-wallX, S(32), Math.PI / 2);
+    // 北防火墙: 三罐各一个梯口 x=-84(1号) / x=0(6号) / x=84(3号, 通三级防控阀)
+    makeWallStair(S(-84), -wallZ, 0);
+    makeWallStair(S(0), -wallZ, 0);
+    makeWallStair(S(84), -wallZ, 0);
+    // 南防火墙: 2号罐南侧(x=84)
+    makeWallStair(S(84), wallZ, 0);
+    // 东防火墙: 泵房(z=-32) + 2号/3号罐之间进罐区梯口(z=0) + 2号罐角/东南段入罐梯口(z=50, 靠泵房·绿化带侧)
+    makeWallStair(wallX, S(-32), Math.PI / 2);
+    makeWallStair(wallX, S(0), -Math.PI / 2);
+    makeWallStair(wallX, S(50), -Math.PI / 2);
+}
+
+// ---------- 文字标签 ----------
+function makeLabel(text, color) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 256; canvas.height = 128;
+    const ctx = canvas.getContext('2d');
+    ctx.textAlign = 'center';
+    ctx.fillStyle = color || '#ffffff';
+    const lines = text.split('\n');
+    lines.forEach((line, i) => {
+        ctx.font = i === 0 ? 'bold 38px Microsoft YaHei' : '26px Microsoft YaHei';
+        ctx.fillText(line, 128, 50 + i * 44);
+    });
+    const tex = new THREE.CanvasTexture(canvas);
+    const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false });
+    return new THREE.Sprite(mat);
+}
+
+// ---------- 泵房 ----------
+let pumpGroup, pumpLight;
+function buildPumpRoom() {
+    pumpGroup = new THREE.Group();
+    // 主体建筑(长轴南北向)
+    const body = new THREE.Mesh(
+        new THREE.BoxGeometry(PUMP.w, PUMP.h, PUMP.d),
+        new THREE.MeshStandardMaterial({ color: 0x5c6b7a, roughness: 0.7, metalness: 0.2 })
+    );
+    body.position.y = PUMP.h / 2;
+    body.castShadow = true;
+    pumpGroup.add(body);
+    // 屋顶
+    const roofM = new THREE.Mesh(
+        new THREE.BoxGeometry(PUMP.w + S(2), S(0.6), PUMP.d + S(2)),
+        new THREE.MeshStandardMaterial({ color: 0x3d4a56, roughness: 0.55, metalness: 0.5 })
+    );
+    roofM.position.y = PUMP.h + S(0.3);
+    pumpGroup.add(roofM);
+    // 门(西立面, 面向罐区)
+    const door = new THREE.Mesh(
+        new THREE.BoxGeometry(S(0.3), S(5), S(4)),
+        new THREE.MeshStandardMaterial({ color: 0x2196f3, roughness: 0.45, metalness: 0.2 })
+    );
+    door.position.set(-PUMP.w / 2 - S(0.15), S(2.5), 0);
+    pumpGroup.add(door);
+    // 窗户(西立面)
+    [-S(12), S(12)].forEach(z => {
+        const win = new THREE.Mesh(
+            new THREE.BoxGeometry(S(0.2), S(2.5), S(4)),
+            new THREE.MeshBasicMaterial({ color: 0xffeebb })
+        );
+        win.position.set(-PUMP.w / 2 - S(0.1), S(4.5), z);
+        pumpGroup.add(win);
+    });
+    // 泵房标牌
+    const label = makeLabel('原油泵房\nP301 8台泵', '#ffdd88');
+    label.position.set(0, PUMP.h + S(6), 0);
+    label.scale.set(S(16), S(8), 1);
+    pumpGroup.add(label);
+    // 8台输油泵: P301-1/2/3/6/7/8/9/10, 沿南北向布置
+    const pumpIds = ['P301-10', 'P301-3', 'P301-1', 'P301-2', 'P301-6', 'P301-7', 'P301-8', 'P301-9'];
+    pumpIds.forEach((pid, i) => {
+        const pump = new THREE.Group();
+        const pbody = new THREE.Mesh(
+            new THREE.CylinderGeometry(S(1.3), S(1.6), S(2.6), 12),
+            new THREE.MeshStandardMaterial({ color: 0x2e7d32, roughness: 0.4, metalness: 0.5 })
+        );
+        pbody.rotation.x = Math.PI / 2;
+        pbody.position.y = S(1.6);
+        pump.add(pbody);
+        const motor = new THREE.Mesh(
+            new THREE.BoxGeometry(S(2.2), S(2), S(3.2)),
+            new THREE.MeshStandardMaterial({ color: 0x37474f, roughness: 0.5, metalness: 0.4 })
+        );
+        motor.position.set(0, S(1.4), S(2.8));
+        pump.add(motor);
+        // 泵位号
+        const plabel = makeLabel(pid, '#aaffaa');
+        plabel.position.set(0, S(4.6), 0);
+        plabel.scale.set(S(7), S(3.5), 1);
+        pump.add(plabel);
+        pump.position.set(S(2), 0, (i - 3.5) * S(4.4));
+        pump.traverse(o => { o.userData.label = pid + ' 输油泵'; });
+        pumpGroup.add(pump);
+        pumpImpellers.push(pbody);
+        pickables.push(pbody);
+    });
+    // 泵房运行指示灯
+    pumpLight = new THREE.PointLight(0x44ff44, 0.5, S(20));
+    pumpLight.position.set(-PUMP.w / 2 - S(2), PUMP.h + S(1), 0);
+    pumpGroup.add(pumpLight);
+
+    pumpGroup.position.set(PUMP.x, 0, PUMP.z);
+    pumpGroup.traverse(o => { if (!o.userData.label) o.userData.label = '原油泵房 (8台输油泵 P301-1~10)'; });
+    scene.add(pumpGroup);
+    pickables.push(body);
+}
+
+// ---------- 管线系统 ----------
+let valveWheels = {}, pipeFlowMeshes = [];
+function buildPipelines() {
+    const pipeMat = new THREE.MeshStandardMaterial({ color: 0x8B5E3C, roughness: 0.4, metalness: 0.6 });
+    const firePipeMat = new THREE.MeshStandardMaterial({ color: 0x2e7d32, roughness: 0.4, metalness: 0.5 }); // 消防喷淋线-绿色
+    const foamPipeMat = new THREE.MeshStandardMaterial({ color: 0xd32f2f, roughness: 0.4, metalness: 0.5 }); // 泡沫线-红色
+
+    function pipe(from, to, radius, mat) {
+        const dir = new THREE.Vector3().subVectors(
+            new THREE.Vector3(to[0], to[1], to[2]),
+            new THREE.Vector3(from[0], from[1], from[2])
+        );
+        const len = dir.length();
+        const mesh = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, len, 10), mat);
+        mesh.position.set(
+            (from[0] + to[0]) / 2, (from[1] + to[1]) / 2, (from[2] + to[2]) / 2
+        );
+        mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.normalize());
+        mesh.castShadow = true;
+        scene.add(mesh);
+        return mesh;
+    }
+    function elbow(pos, radius, mat) {
+        const e = new THREE.Mesh(new THREE.SphereGeometry(radius * 1.3, 10, 10), mat);
+        e.position.set(pos[0], pos[1], pos[2]);
+        scene.add(e);
+        return e;
+    }
+
+    const pipeH = S(2.5); // 管架高度
+    const feedZ = -S(4);  // 进油总管(北侧)
+    const outZ = S(4);    // 出油总管(南侧)
+    const feedMat2 = new THREE.MeshStandardMaterial({ color: 0x5D4037, roughness: 0.4, metalness: 0.6 });
+
+    // 每座罐: 双支管分别接入进油总管和出油总管, 各设一个切断阀 (T305-4 管线独立, 在此循环外单独处理)
+    TANKS.filter(t => t.id !== 'T305-4').forEach(t => {
+        const pos = tankPos(t);
+        const r = S(t.D / 2);
+        const dirZ = pos.z < 0 ? 1 : -1;            // 支管方向: 由罐前指向中央通道
+        const rimZ = pos.z + dirZ * r * 0.9;         // 罐前出料口(靠近中央通道一侧)
+        // 罐前立管(共用)
+        pipe([pos.x, S(1), rimZ], [pos.x, pipeH, rimZ], S(0.6), pipeMat);
+        // 进油支管: 罐前 → 进油总管
+        pipe([pos.x, pipeH, rimZ], [pos.x, pipeH, feedZ], S(0.5), feedMat2);
+        elbow([pos.x, pipeH, feedZ], S(0.5), feedMat2);
+        // 出油支管: 罐前 → 出油总管
+        pipe([pos.x, pipeH, rimZ], [pos.x, pipeH, outZ], S(0.5), pipeMat);
+        elbow([pos.x, pipeH, outZ], S(0.5), pipeMat);
+
+        // 进口切断阀(进油支管上)
+        const inValveZ = pos.z + dirZ * (r * 0.9 + S(2.5));
+        const inValve = makeValve(pos.x - S(1.8), pipeH, inValveZ, t.id + '-IN', Math.PI / 2);
+        valves.push(inValve);
+        // 出口切断阀(出油支管上)
+        const outValveZ = pos.z + dirZ * (r * 0.9 + S(5));
+        const outValve = makeValve(pos.x + S(1.8), pipeH, outValveZ, t.id + '-OUT', Math.PI / 2);
+        valves.push(outValve);
+    });
+
+    // T305-4 独立管线: 不接301进/出油总管, 自西侧其他管区单独引入
+    const t305 = TANKS.find(tk => tk.id === 'T305-4');
+    const p305 = tankPos(t305);
+    const r305 = S(t305.D / 2);
+    const frontZ305 = p305.z - r305 * 0.9; // 罐前(朝中央通道一侧)
+    // 罐前立管
+    pipe([p305.x, S(1), frontZ305], [p305.x, pipeH, frontZ305], S(0.55), pipeMat);
+    elbow([p305.x, pipeH, frontZ305], S(0.55), pipeMat);
+    // 独立来管(东西向, 自西防火墙方向引入)
+    pipe([S(-118), pipeH, frontZ305], [p305.x, pipeH, frontZ305], S(0.55), pipeMat);
+    // 独立线上的两个切断阀
+    const v305in = makeValve(S(-104), pipeH, frontZ305, 'T305-4-IN', Math.PI / 2);
+    valves.push(v305in);
+    const v305out = makeValve(S(-96), pipeH, frontZ305, 'T305-4-OUT', Math.PI / 2);
+    valves.push(v305out);
+    const lbl305 = makeLabel('T305-4独立管线\n(来自其他管区)', '#ddaa77');
+    lbl305.position.set(S(-104), S(6), frontZ305 + S(6));
+    lbl305.scale.set(S(15), S(6), 1);
+    scene.add(lbl305);
+
+    // 进油总管(东西向→出防火墙后转弯→横着到泵房前面)
+    const wallEast = S(120);
+    const turnX = S(122); // 出东墙后转弯处
+    const pumpFrontX = PUMP.x - PUMP.w / 2; // 泵房西立面
+    // 进油: 罐区内东西向 → 出东墙 → 转弯向北 → 到泵房z → 横着进泵房
+    pipe([S(-92), pipeH, feedZ], [turnX, pipeH, feedZ], S(0.85), feedMat2);
+    elbow([turnX, pipeH, feedZ], S(0.85), feedMat2);
+    pipe([turnX, pipeH, feedZ], [turnX, pipeH, PUMP.z - S(4)], S(0.85), feedMat2);
+    elbow([turnX, pipeH, PUMP.z - S(4)], S(0.85), feedMat2);
+    pipe([turnX, pipeH, PUMP.z - S(4)], [pumpFrontX, pipeH, PUMP.z - S(4)], S(0.85), feedMat2);
+    // 出油: 同理
+    pipe([S(-92), pipeH, outZ], [turnX, pipeH, outZ], S(0.85), pipeMat);
+    elbow([turnX, pipeH, outZ], S(0.85), pipeMat);
+    pipe([turnX, pipeH, outZ], [turnX, pipeH, PUMP.z + S(4)], S(0.85), pipeMat);
+    elbow([turnX, pipeH, PUMP.z + S(4)], S(0.85), pipeMat);
+    pipe([turnX, pipeH, PUMP.z + S(4)], [pumpFrontX, pipeH, PUMP.z + S(4)], S(0.85), pipeMat);
+
+    // 管架支撑(双总管共用门式架)
+    for (let x = -88; x <= 120; x += 16) {
+        const support = new THREE.Mesh(
+            new THREE.BoxGeometry(S(0.5), pipeH, S(0.5)),
+            new THREE.MeshStandardMaterial({ color: 0x4a5568, roughness: 0.5, metalness: 0.55 })
+        );
+        support.position.set(S(x), pipeH / 2, feedZ);
+        scene.add(support);
+        const support2 = support.clone();
+        support2.position.set(S(x), pipeH / 2, outZ);
+        scene.add(support2);
+        // 横梁连接两管架
+        const beam = new THREE.Mesh(
+            new THREE.BoxGeometry(S(0.4), S(0.4), S(9)),
+            new THREE.MeshStandardMaterial({ color: 0x4a5568, roughness: 0.5, metalness: 0.55 })
+        );
+        beam.position.set(S(x), pipeH, 0);
+        scene.add(beam);
+    }
+
+    // 消防水环管(红色, 沿防火堤内侧)
+    const fw = S(232), fd = S(148), fh = S(1.5);
+    pipe([-fw / 2, fh, -fd / 2], [fw / 2, fh, -fd / 2], S(0.45), firePipeMat);
+    pipe([-fw / 2, fh, fd / 2], [fw / 2, fh, fd / 2], S(0.45), firePipeMat);
+    pipe([-fw / 2, fh, -fd / 2], [-fw / 2, fh, fd / 2], S(0.45), firePipeMat);
+    pipe([fw / 2, fh, -fd / 2], [fw / 2, fh, fd / 2], S(0.45), firePipeMat);
+    // 消防喷淋线→泵房连接(东侧)
+    pipe([fw / 2, fh, PUMP.z], [PUMP.x - PUMP.w / 2 - S(2), fh, PUMP.z], S(0.45), firePipeMat);
+    const fwLabel = makeLabel('消防喷淋线 DN200', '#66bb6a');
+    fwLabel.position.set(S(-60), S(5), -fd / 2);
+    fwLabel.scale.set(S(16), S(6), 1);
+    scene.add(fwLabel);
+
+    // 泡沫管线(红色: 消防喷淋线东段→沿T301-2东罐壁垂直上升→罐顶泡沫产生器)
+    const t2pos = tankPos(TANKS[1]);
+    const t2r = S(TANKS[1].D / 2);
+    const foamGenX = t2pos.x + t2r, foamGenZ = t2pos.z; // T301-2东罐壁
+    // 泡沫进料(水平, 自消防水环管东段接出)
+    pipe([fw / 2, S(1.5), foamGenZ], [foamGenX, S(1.5), foamGenZ], S(0.35), foamPipeMat);
+    // 泡沫立管(垂直, 沿东罐壁上升至罐顶)
+    pipe([foamGenX, S(1.5), foamGenZ], [foamGenX, S(TANK_H - 1), foamGenZ], S(0.35), foamPipeMat);
+    // 泡沫产生器
+    const foamGen = new THREE.Mesh(
+        new THREE.CylinderGeometry(S(1.2), S(1.5), S(3), 10),
+        new THREE.MeshStandardMaterial({ color: 0xff5722, roughness: 0.4, metalness: 0.5 })
+    );
+    foamGen.position.set(foamGenX, S(TANK_H - 1), foamGenZ);
+    foamGen.userData.label = '泡沫产生器 (T301-2)';
+    scene.add(foamGen);
+    pickables.push(foamGen);
+    const foamLabel = makeLabel('泡沫管线 DN150', '#ef5350');
+    foamLabel.position.set(S(110), S(5), foamGenZ + S(7));
+    foamLabel.scale.set(S(15), S(6), 1);
+    scene.add(foamLabel);
+
+    // === 3号罐路灯 + 雨水阀(关阀停泵后需关闭, 防止消防污水进入雨水系统) ===
+    const t3 = TANKS.find(tk => tk.id === 'T301-3');
+    const p3 = tankPos(t3);
+    const lx = p3.x, lz = p3.z - S(28); // 路灯位置: T301-3北侧(罐与北防火堤之间)
+    // 路灯杆
+    const poleMat = new THREE.MeshStandardMaterial({ color: 0x455a64, roughness: 0.5, metalness: 0.5 });
+    const pole = new THREE.Mesh(new THREE.CylinderGeometry(S(0.2), S(0.32), S(12), 8), poleMat);
+    pole.position.set(lx, S(6), lz);
+    pole.castShadow = true;
+    scene.add(pole);
+    // 灯头(发光)
+    const lampHead = new THREE.Mesh(
+        new THREE.SphereGeometry(S(0.7), 12, 8),
+        new THREE.MeshStandardMaterial({ color: 0xfff59d, emissive: 0xffd54f, emissiveIntensity: 1.6 })
+    );
+    lampHead.position.set(lx, S(12.3), lz);
+    lampHead.userData.label = '路灯 (T301-3罐北)';
+    scene.add(lampHead);
+    pickables.push(lampHead);
+    // 光晕
+    const lampGlow = new THREE.Mesh(
+        new THREE.SphereGeometry(S(1.5), 12, 8),
+        new THREE.MeshBasicMaterial({ color: 0xffe082, transparent: true, opacity: 0.16 })
+    );
+    lampGlow.position.set(lx, S(12.3), lz);
+    scene.add(lampGlow);
+    // 雨排管(南北向, 由罐区内穿北防火墙排向罐区外)
+    const rwPipeMat = new THREE.MeshStandardMaterial({ color: 0x26a69a, roughness: 0.5, metalness: 0.4 });
+    const rwWallZ = -S(77.5); // 北防火墙位置
+    const rwOutZ = rwWallZ - S(5); // 墙外阀位(z≈-82.5m)
+    pipe([lx, S(0.9), lz], [lx, S(0.9), rwOutZ - S(3)], S(0.4), rwPipeMat); // 从路灯处向北穿墙排至罐区外
+
+    // 手轮阀工厂(返回 {group, wheel})
+    function makeHandValve(bodyColor, wheelColor) {
+        const g = new THREE.Group();
+        const body = new THREE.Mesh(
+            new THREE.BoxGeometry(S(1.4), S(1.1), S(1.1)),
+            new THREE.MeshStandardMaterial({ color: bodyColor, roughness: 0.4, metalness: 0.6 })
+        );
+        g.add(body);
+        const stem = new THREE.Mesh(
+            new THREE.CylinderGeometry(S(0.12), S(0.12), S(1.5), 6),
+            new THREE.MeshStandardMaterial({ color: 0x90a4ae, roughness: 0.45, metalness: 0.6 })
+        );
+        stem.position.y = S(1.1);
+        g.add(stem);
+        const wheel = new THREE.Group();
+        const rim = new THREE.Mesh(
+            new THREE.TorusGeometry(S(0.9), S(0.1), 8, 20),
+            new THREE.MeshStandardMaterial({ color: wheelColor, roughness: 0.3, metalness: 0.7 })
+        );
+        wheel.add(rim);
+        for (let i = 0; i < 3; i++) {
+            const spoke = new THREE.Mesh(
+                new THREE.CylinderGeometry(S(0.07), S(0.07), S(1.8), 6),
+                new THREE.MeshStandardMaterial({ color: wheelColor, roughness: 0.4, metalness: 0.5 })
+            );
+            spoke.rotation.z = Math.PI / 2;
+            spoke.rotation.y = i * Math.PI / 3;
+            wheel.add(spoke);
+        }
+        wheel.rotation.x = Math.PI / 2;
+        wheel.position.y = S(1.9);
+        g.add(wheel);
+        return { group: g, wheel, body };
+    }
+
+    // ① 雨水外排阀(罐区外·T301-3后方, 演练需关闭的主阀)
+    const rv = makeHandValve(0x00838f, 0x26c6da);
+    rv.group.position.set(lx, S(0.9), rwOutZ);
+    rv.group.traverse(o => { o.userData.label = '雨水外排阀 (罐区外·T301-3后)'; });
+    scene.add(rv.group);
+    pickables.push(rv.body);
+    rainValve = { group: rv.group, wheel: rv.wheel, closed: false, angle: 0, targetAngle: 0 };
+    const rvLabel = makeLabel('雨水外排阀\n(排向罐区外)', '#4dd0e1');
+    rvLabel.position.set(lx, S(5.5), rwOutZ);
+    rvLabel.scale.set(S(12), S(5.5), 1);
+    scene.add(rvLabel);
+
+    // ② 事故水阀(罐区外·雨水外排阀旁约2m)
+    const av = makeHandValve(0x6a1b9a, 0xba68c8);
+    av.group.position.set(lx + S(3), S(0.9), rwOutZ);
+    av.group.traverse(o => { o.userData.label = '事故水阀 (罐区外)'; });
+    scene.add(av.group);
+    pickables.push(av.body);
+    accidentValve = { group: av.group, wheel: av.wheel, closed: false, angle: 0, targetAngle: 0 };
+    const avLabel = makeLabel('事故水阀', '#ce93d8');
+    avLabel.position.set(lx + S(3), S(5.5), rwOutZ);
+    avLabel.scale.set(S(10), S(5), 1);
+    scene.add(avLabel);
+
+    // ③ 初期雨水阀(罐区内·T301-3北侧防火墙角落, 地底阀+管伸出地面+手轮)
+    const iwX = p3.x, iwZ = -S(70);
+    const iwGrp = new THREE.Group();
+    // 地下阀体(半埋, 贴地)
+    const iwBox = new THREE.Mesh(
+        new THREE.BoxGeometry(S(1.6), S(0.7), S(1.6)),
+        new THREE.MeshStandardMaterial({ color: 0x00695c, roughness: 0.55, metalness: 0.5 })
+    );
+    iwBox.position.y = S(0.35);
+    iwGrp.add(iwBox);
+    // 伸出地面的管
+    const iwPipe = new THREE.Mesh(
+        new THREE.CylinderGeometry(S(0.3), S(0.3), S(1.6), 10),
+        new THREE.MeshStandardMaterial({ color: 0x26a69a, roughness: 0.5, metalness: 0.4 })
+    );
+    iwPipe.position.y = S(1.3);
+    iwGrp.add(iwPipe);
+    // 顶部小法兰
+    const iwFlange = new THREE.Mesh(
+        new THREE.CylinderGeometry(S(0.5), S(0.5), S(0.2), 12),
+        new THREE.MeshStandardMaterial({ color: 0x90a4ae, roughness: 0.45, metalness: 0.6 })
+    );
+    iwFlange.position.y = S(2.1);
+    iwGrp.add(iwFlange);
+    // 手轮(可关闭)
+    const iwWheel = new THREE.Group();
+    const iwRim = new THREE.Mesh(
+        new THREE.TorusGeometry(S(0.7), S(0.09), 8, 18),
+        new THREE.MeshStandardMaterial({ color: 0x80cbc4, roughness: 0.3, metalness: 0.7 })
+    );
+    iwWheel.add(iwRim);
+    for (let i = 0; i < 3; i++) {
+        const iwSpoke = new THREE.Mesh(
+            new THREE.CylinderGeometry(S(0.06), S(0.06), S(1.4), 6),
+            new THREE.MeshStandardMaterial({ color: 0x4db6ac, roughness: 0.4, metalness: 0.5 })
+        );
+        iwSpoke.rotation.z = Math.PI / 2;
+        iwSpoke.rotation.y = i * Math.PI / 3;
+        iwWheel.add(iwSpoke);
+    }
+    iwWheel.rotation.x = Math.PI / 2;
+    iwWheel.position.y = S(2.4);
+    iwGrp.add(iwWheel);
+    iwGrp.position.set(iwX, 0, iwZ);
+    iwGrp.traverse(o => { o.userData.label = '初期雨水阀 (地底阀·T301-3北侧)'; });
+    scene.add(iwGrp);
+    pickables.push(iwBox);
+    initRainValve = { group: iwGrp, wheel: iwWheel, closed: false, angle: 0, targetAngle: 0 };
+    const iwLabel = makeLabel('初期雨水阀\n(地底阀)', '#80cbc4');
+    iwLabel.position.set(iwX, S(5), iwZ);
+    iwLabel.scale.set(S(11), S(5.5), 1);
+    scene.add(iwLabel);
+
+    // 三级防控三阀(演练需全部关闭): 雨水外排阀 / 事故水阀 / 初期雨水阀
+    containValves = [rainValve, accidentValve, initRainValve];
+
+    // 管线标注
+    const pipeLabel1 = makeLabel('进油总管 DN400', '#ddaa77');
+    pipeLabel1.position.set(S(20), S(6.5), feedZ);
+    pipeLabel1.scale.set(S(16), S(6), 1);
+    scene.add(pipeLabel1);
+    const pipeLabel2 = makeLabel('出油总管 DN400', '#ddaa77');
+    pipeLabel2.position.set(S(20), S(6.5), outZ);
+    pipeLabel2.scale.set(S(16), S(6), 1);
+    scene.add(pipeLabel2);
+}
+
+// ---------- 阀门 ----------
+function makeValve(x, y, z, tankId, ry) {
+    const grp = new THREE.Group();
+    // 阀体
+    const body = new THREE.Mesh(
+        new THREE.BoxGeometry(S(1.8), S(1.4), S(1.4)),
+        new THREE.MeshStandardMaterial({ color: 0xb71c1c, roughness: 0.4, metalness: 0.6 })
+    );
+    grp.add(body);
+    // 阀杆
+    const stem = new THREE.Mesh(
+        new THREE.CylinderGeometry(S(0.2), S(0.2), S(2), 8),
+        new THREE.MeshStandardMaterial({ color: 0x90a4ae, roughness: 0.45, metalness: 0.6 })
+    );
+    stem.position.y = S(1.5);
+    grp.add(stem);
+    // 手轮
+    const wheel = new THREE.Group();
+    const rim = new THREE.Mesh(
+        new THREE.TorusGeometry(S(1.1), S(0.12), 8, 24),
+        new THREE.MeshStandardMaterial({ color: 0xf44336, roughness: 0.3, metalness: 0.7 })
+    );
+    wheel.add(rim);
+    for (let i = 0; i < 3; i++) {
+        const spoke = new THREE.Mesh(
+            new THREE.CylinderGeometry(S(0.08), S(0.08), S(2.2), 6),
+            new THREE.MeshStandardMaterial({ color: 0xd32f2f, roughness: 0.45, metalness: 0.3 })
+        );
+        spoke.rotation.z = Math.PI / 2;
+        spoke.rotation.y = i * Math.PI / 3;
+        wheel.add(spoke);
+    }
+    wheel.rotation.x = Math.PI / 2;
+    wheel.position.y = S(2.6);
+    grp.add(wheel);
+
+    grp.position.set(x, y, z);
+    if (ry) grp.rotation.y = ry;
+    grp.traverse(o => { o.userData.label = tankId + ' 切断阀'; });
+    scene.add(grp);
+    pickables.push(body);
+    const v = { group: grp, wheel: wheel, tankId: tankId, closed: false, angle: 0, targetAngle: 0 };
+    valveWheels[tankId] = v;
+    return v;
+}
+
+// ---------- 应急人员(4人) ----------
+function makePerson(name, role, color) {
+    const grp = new THREE.Group();
+
+    const skinMat = new THREE.MeshStandardMaterial({ color: 0xf0c098, roughness: 0.6, metalness: 0.0 });
+    const jacketMat = new THREE.MeshStandardMaterial({ color: color, roughness: 0.72, metalness: 0.02 });
+    const pantsMat = new THREE.MeshStandardMaterial({ color: 0x2b3340, roughness: 0.85, metalness: 0.0 });
+    const bootMat = new THREE.MeshStandardMaterial({ color: 0x15181d, roughness: 0.55, metalness: 0.08 });
+    const helmetMat = new THREE.MeshStandardMaterial({ color: 0xffd600, roughness: 0.3, metalness: 0.06 });
+    const gloveMat = new THREE.MeshStandardMaterial({ color: 0xd8d8d8, roughness: 0.7, metalness: 0.0 });
+    const vestMat = new THREE.MeshStandardMaterial({ color: 0xff7a00, roughness: 0.6, metalness: 0.02 });
+    const stripMat = new THREE.MeshStandardMaterial({ color: 0xeef2f5, roughness: 0.25, metalness: 0.5, emissive: 0x2a2f33, emissiveIntensity: 0.4 });
+
+    // 工装靴
+    [-S(0.32), S(0.32)].forEach(x => {
+        const boot = new THREE.Mesh(new THREE.BoxGeometry(S(0.5), S(0.42), S(0.85)), bootMat);
+        boot.position.set(x, S(0.21), S(0.08));
+        grp.add(boot);
+    });
+    // 长裤(双腿)
+    [-S(0.3), S(0.3)].forEach(x => {
+        const leg = new THREE.Mesh(new THREE.CylinderGeometry(S(0.27), S(0.31), S(1.5), 12), pantsMat);
+        leg.position.set(x, S(1.18), 0);
+        grp.add(leg);
+    });
+    // 腰带
+    const belt = new THREE.Mesh(new THREE.CylinderGeometry(S(0.66), S(0.66), S(0.22), 16), bootMat);
+    belt.position.y = S(1.98);
+    grp.add(belt);
+    // 躯干(工装上衣)
+    const torso = new THREE.Mesh(new THREE.CylinderGeometry(S(0.62), S(0.74), S(1.55), 16), jacketMat);
+    torso.position.y = S(2.85);
+    grp.add(torso);
+    // 肩部
+    const shoulders = new THREE.Mesh(new THREE.CylinderGeometry(S(0.66), S(0.62), S(0.4), 16), jacketMat);
+    shoulders.position.y = S(3.5);
+    grp.add(shoulders);
+    // 高可视反光背心
+    const vest = new THREE.Mesh(new THREE.CylinderGeometry(S(0.7), S(0.8), S(1.25), 16), vestMat);
+    vest.position.y = S(2.9);
+    grp.add(vest);
+    [S(2.55), S(3.2)].forEach(y => {
+        const strip = new THREE.Mesh(new THREE.CylinderGeometry(S(0.79), S(0.81), S(0.12), 16), stripMat);
+        strip.position.y = y;
+        grp.add(strip);
+    });
+    // 颈部
+    const neck = new THREE.Mesh(new THREE.CylinderGeometry(S(0.24), S(0.28), S(0.35), 12), skinMat);
+    neck.position.y = S(3.82);
+    grp.add(neck);
+    // 头部
+    const head = new THREE.Mesh(new THREE.SphereGeometry(S(0.52), 20, 16), skinMat);
+    head.position.y = S(4.35);
+    grp.add(head);
+    // 头发(后脑)
+    const hair = new THREE.Mesh(
+        new THREE.SphereGeometry(S(0.53), 16, 12, 0, Math.PI * 2, Math.PI * 0.35, Math.PI * 0.5),
+        new THREE.MeshStandardMaterial({ color: 0x2b2118, roughness: 0.9, metalness: 0.0 })
+    );
+    hair.position.y = S(4.38);
+    grp.add(hair);
+    // 安全帽(帽壳+帽檐+帽带)
+    const helmet = new THREE.Mesh(
+        new THREE.SphereGeometry(S(0.6), 20, 12, 0, Math.PI * 2, 0, Math.PI * 0.6),
+        helmetMat
+    );
+    helmet.position.y = S(4.5);
+    grp.add(helmet);
+    const brim = new THREE.Mesh(new THREE.CylinderGeometry(S(0.72), S(0.72), S(0.08), 20), helmetMat);
+    brim.position.y = S(4.42);
+    grp.add(brim);
+    const strap = new THREE.Mesh(new THREE.TorusGeometry(S(0.5), S(0.04), 8, 20),
+        new THREE.MeshStandardMaterial({ color: 0x333333, roughness: 0.8 }));
+    strap.rotation.x = Math.PI / 2;
+    strap.position.y = S(4.28);
+    grp.add(strap);
+
+    // 手臂(以肩关节为枢轴的组, 使摆动更自然)
+    function buildArm(side) {
+        const pivot = new THREE.Group();
+        pivot.position.set(side * S(0.82), S(3.55), 0);
+        const upper = new THREE.Mesh(new THREE.CylinderGeometry(S(0.2), S(0.22), S(0.95), 12), jacketMat);
+        upper.position.y = -S(0.48);
+        pivot.add(upper);
+        const fore = new THREE.Mesh(new THREE.CylinderGeometry(S(0.17), S(0.2), S(0.9), 12), jacketMat);
+        fore.position.y = -S(1.32);
+        pivot.add(fore);
+        const cuff = new THREE.Mesh(new THREE.CylinderGeometry(S(0.21), S(0.21), S(0.14), 12), stripMat);
+        cuff.position.y = -S(0.98);
+        pivot.add(cuff);
+        const glove = new THREE.Mesh(new THREE.SphereGeometry(S(0.22), 12, 10), gloveMat);
+        glove.position.y = -S(1.85);
+        pivot.add(glove);
+        pivot.rotation.z = side * -0.12;
+        grp.add(pivot);
+        return pivot;
+    }
+    const armL = buildArm(-1);
+    const armR = buildArm(1);
+
+    // 名牌
+    const label = makeLabel(name + '\n' + role, '#ffffff');
+    label.position.y = S(6.2);
+    label.scale.set(S(9), S(5), 1);
+    grp.add(label);
+
+    grp.traverse(o => { o.userData.label = name + ' (' + role + ')'; });
+    scene.add(grp);
+    pickables.push(torso);
+    return {
+        group: grp, name, role, armL, armR,
+        pos: new THREE.Vector3(), target: null, speed: S(8),
+        walking: false, walkPhase: 0, arrived: false, radioPose: false,
+        path: null, pathIndex: 0
+    };
+}
+
+function buildPersonnel() {
+    // 集结点: 罐区西侧空地(上风口, 防火墙外)
+    const muster = new THREE.Vector3(S(-135), 0, S(20));
+    personnel = [
+        makePerson('班长', '现场指挥', 0x1565c0),
+        makePerson('计量员', '计量监测', 0xe65100),
+        makePerson('油槽工甲', '关阀·报警', 0x2e7d32),
+        makePerson('油槽工乙', '停泵·泡沫', 0xb71c1c)
+    ];
+    personnel.forEach(p => {
+        p.group.position.copy(muster);
+        p.pos.copy(muster);
+    });
+    // 集结点标记
+    const ring = new THREE.Mesh(
+        new THREE.RingGeometry(S(4), S(5), 32),
+        new THREE.MeshBasicMaterial({ color: 0xffeb3b, side: THREE.DoubleSide, transparent: true, opacity: 0.7 })
+    );
+    ring.rotation.x = -Math.PI / 2;
+    ring.position.set(muster.x, 0.05, muster.z);
+    scene.add(ring);
+    const mLabel = makeLabel('应急集结点\n(上风口·' + WIND.upwind + ')', '#ffee55');
+    mLabel.position.set(muster.x, S(8), muster.z);
+    mLabel.scale.set(S(12), S(6), 1);
+    scene.add(mLabel);
+}
+
+// ---------- 火灾/喷淋/泡沫粒子系统 ----------
+function createParticleSystem(count, genFn, updateFn) {
+    const geo = new THREE.BufferGeometry();
+    const positions = new Float32Array(count * 3);
+    const colors = new Float32Array(count * 3);
+    const sizes = new Float32Array(count);
+    const particles = [];
+    for (let i = 0; i < count; i++) {
+        particles.push(genFn(i));
+    }
+    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+    geo.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+    return { geo, particles, positions, colors, sizes, updateFn, count };
+}
+
+function buildFireSystems() {
+    const t2 = TANKS[1], pos = tankPos(t2);
+    const r = S(t2.D / 2), topY = S(t2.H - 1);
+
+    // === 火焰粒子 ===
+    fireParticles = createParticleSystem(600, () => ({
+        x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0, life: 0, maxLife: 1, active: false
+    }), (p, dt, i) => {
+        if (fireIntensity <= 0.01) { p.active = false; return; }
+        if (!p.active) {
+            if (Math.random() > fireIntensity) return;
+            // 环形分布(密封圈着火)
+            const ang = Math.random() * Math.PI * 2;
+            const rr = r * (0.9 + Math.random() * 0.12);
+            p.x = pos.x + Math.cos(ang) * rr;
+            p.z = pos.z + Math.sin(ang) * rr;
+            p.y = topY + Math.random() * S(1);
+            p.vx = (Math.random() - 0.5) * S(2);
+            p.vy = S(6 + Math.random() * 8) * fireIntensity;
+            p.vz = (Math.random() - 0.5) * S(2);
+            p.life = 0;
+            p.maxLife = 0.6 + Math.random() * 0.8;
+            p.active = true;
+        }
+        p.life += dt;
+        if (p.life >= p.maxLife) { p.active = false; return; }
+        p.x += p.vx * dt; p.y += p.vy * dt; p.z += p.vz * dt;
+        p.vx += (Math.random() - 0.5) * S(4) * dt;
+        p.vz += (Math.random() - 0.5) * S(4) * dt;
+        const t = p.life / p.maxLife;
+        const idx = i * 3;
+        // 颜色: 黄→橙→红
+        fireParticles.colors[idx] = 1.0;
+        fireParticles.colors[idx + 1] = Math.max(0, 0.85 - t * 1.2);
+        fireParticles.colors[idx + 2] = Math.max(0, 0.3 - t * 0.8);
+        fireParticles.sizes[i] = S(2.5) * (1 - t * 0.5) * fireIntensity;
+    });
+    const fireMat = new THREE.PointsMaterial({
+        size: S(2.5), vertexColors: true, transparent: true, opacity: 0.9,
+        blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true
+    });
+    const firePoints = new THREE.Points(fireParticles.geo, fireMat);
+    firePoints.frustumCulled = false;
+    scene.add(firePoints);
+
+    // === 烟雾粒子 ===
+    smokeParticles = createParticleSystem(300, () => ({
+        x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0, life: 0, maxLife: 1, active: false
+    }), (p, dt, i) => {
+        if (fireIntensity <= 0.01) { p.active = false; return; }
+        if (!p.active) {
+            if (Math.random() > fireIntensity * 0.5) return;
+            const ang = Math.random() * Math.PI * 2;
+            const rr = r * (0.85 + Math.random() * 0.2);
+            p.x = pos.x + Math.cos(ang) * rr;
+            p.z = pos.z + Math.sin(ang) * rr;
+            p.y = topY + S(4) + Math.random() * S(3);
+            p.vx = S(1.5 + Math.random());  // 风向: 偏东
+            p.vy = S(3 + Math.random() * 3);
+            p.vz = (Math.random() - 0.5) * S(1);
+            p.life = 0;
+            p.maxLife = 2 + Math.random() * 2;
+            p.active = true;
+        }
+        p.life += dt;
+        if (p.life >= p.maxLife) { p.active = false; return; }
+        p.x += p.vx * dt; p.y += p.vy * dt; p.z += p.vz * dt;
+        const t = p.life / p.maxLife;
+        const idx = i * 3;
+        const g = 0.15 + t * 0.1;
+        smokeParticles.colors[idx] = g; smokeParticles.colors[idx + 1] = g; smokeParticles.colors[idx + 2] = g + 0.02;
+        smokeParticles.sizes[i] = S(3 + t * 6) * fireIntensity;
+    });
+    const smokeMat = new THREE.PointsMaterial({
+        size: S(4), vertexColors: true, transparent: true, opacity: 0.45,
+        depthWrite: false, sizeAttenuation: true
+    });
+    const smokePoints = new THREE.Points(smokeParticles.geo, smokeMat);
+    smokePoints.frustumCulled = false;
+    scene.add(smokePoints);
+
+    // === 火光照(动态) ===
+    fireGlow = new THREE.PointLight(0xff6622, 0, S(120));
+    fireGlow.position.set(pos.x, topY + S(5), pos.z);
+    scene.add(fireGlow);
+
+    // === 喷淋冷却系统(盘管在罐上部罐壁, 向罐壁喷水降温) ===
+    ['T301-2', 'T301-3', 'T301-4'].forEach(id => {
+        const t = TANKS.find(tk => tk.id === id), tp = tankPos(t);
+        const tr = S(t.D / 2), th = S(t.H);
+        const ringY = th * 0.85; // 盘管在罐壁上部(约15m处)
+        const ringR = tr + S(0.4); // 盘管紧贴罐壁外侧
+        const count = 300;
+        const sys = createParticleSystem(count, () => ({
+            x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0, life: 0, maxLife: 1, active: false
+        }), (p, dt, i) => {
+            if (!waterRingOn) { p.active = false; return; }
+            if (!p.active) {
+                const ang = Math.random() * Math.PI * 2;
+                p.x = tp.x + Math.cos(ang) * ringR;
+                p.z = tp.z + Math.sin(ang) * ringR;
+                p.y = ringY + (Math.random() - 0.5) * S(0.5);
+                // 向罐壁方向喷射(向内+向下)
+                const inSpd = S(3 + Math.random() * 2);
+                p.vx = -Math.cos(ang) * inSpd;
+                p.vz = -Math.sin(ang) * inSpd;
+                p.vy = -S(2 + Math.random() * 2);
+                p.life = 0;
+                p.maxLife = 0.6 + Math.random() * 0.4;
+                p.active = true;
+            }
+            p.life += dt;
+            p.vy -= S(9) * dt; // 重力使水沿壁流下
+            if (p.life >= p.maxLife || p.y < S(1)) { p.active = false; return; }
+            p.x += p.vx * dt; p.y += p.vy * dt; p.z += p.vz * dt;
+            const idx = i * 3;
+            sys.colors[idx] = 0.5; sys.colors[idx + 1] = 0.78; sys.colors[idx + 2] = 1.0;
+            sys.sizes[i] = S(0.7);
+        });
+        const mat = new THREE.PointsMaterial({
+            size: S(0.7), vertexColors: true, transparent: true, opacity: 0.75,
+            depthWrite: false, sizeAttenuation: true
+        });
+        const points = new THREE.Points(sys.geo, mat);
+        points.frustumCulled = false;
         scene.add(points);
-        foamParticles.push(points);
+        spraySystems.push(sys);
+
+        // 喷淋盘管(环形, 盘在罐上部罐壁外侧)
+        const sprayRing = new THREE.Mesh(
+            new THREE.TorusGeometry(ringR, S(0.22), 8, 48),
+            new THREE.MeshStandardMaterial({ color: 0x2e7d32, roughness: 0.4, metalness: 0.5 })
+        );
+        sprayRing.rotation.x = Math.PI / 2;
+        sprayRing.position.set(tp.x, ringY, tp.z);
+        sprayRing.userData.label = t.id + ' 喷淋盘管(罐壁上部)';
+        scene.add(sprayRing);
+        pickables.push(sprayRing);
+        // 喷淋立管(从消防水环管沿罐壁上升至盘管)
+        const riserAng = Math.PI * 0.75; // 立管在罐的西南侧
+        const riserX = tp.x + Math.cos(riserAng) * ringR;
+        const riserZ = tp.z + Math.sin(riserAng) * ringR;
+        const riser = new THREE.Mesh(
+            new THREE.CylinderGeometry(S(0.25), S(0.25), ringY - S(1.5), 8),
+            new THREE.MeshStandardMaterial({ color: 0x2e7d32, roughness: 0.4, metalness: 0.5 })
+        );
+        riser.position.set(riserX, (ringY + S(1.5)) / 2, riserZ);
+        riser.userData.label = t.id + ' 喷淋立管';
+        scene.add(riser);
+    });
+
+    // === 泡沫粒子(从泡沫产生器喷向T301-2浮盘) ===
+    foamParticles = createParticleSystem(350, () => ({
+        x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0, life: 0, maxLife: 1, active: false
+    }), (p, dt, i) => {
+        if (!foamOn) { p.active = false; return; }
+        if (!p.active) {
+            p.x = pos.x + r;
+            p.y = S(TANK_H - 0.5);
+            p.z = pos.z;
+            // 喷向罐内浮盘
+            const targetAng = Math.random() * Math.PI * 2;
+            const targetR = r * Math.random() * 0.85;
+            const tx = pos.x + Math.cos(targetAng) * targetR;
+            const tz = pos.z + Math.sin(targetAng) * targetR;
+            const dx = tx - p.x, dz = tz - p.z;
+            const dist = Math.hypot(dx, dz);
+            const spd = S(10 + Math.random() * 4);
+            p.vx = dx / dist * spd;
+            p.vz = dz / dist * spd;
+            p.vy = S(4 + Math.random() * 2);
+            p.life = 0;
+            p.maxLife = dist / spd + 0.2;
+            p.active = true;
+        }
+        p.life += dt;
+        p.vy -= S(9) * dt;
+        if (p.life >= p.maxLife) { p.active = false; return; }
+        p.x += p.vx * dt; p.y += p.vy * dt; p.z += p.vz * dt;
+        if (p.y < topY - S(1)) { p.active = false; return; }
+        const idx = i * 3;
+        foamParticles.colors[idx] = 0.95; foamParticles.colors[idx + 1] = 0.95; foamParticles.colors[idx + 2] = 0.9;
+        foamParticles.sizes[i] = S(1.5);
+    });
+    const foamMat = new THREE.PointsMaterial({
+        size: S(1.5), vertexColors: true, transparent: true, opacity: 0.85,
+        depthWrite: false, sizeAttenuation: true
+    });
+    const foamPoints = new THREE.Points(foamParticles.geo, foamMat);
+    foamPoints.frustumCulled = false;
+    scene.add(foamPoints);
+
+    // 浮盘泡沫覆盖层(逐渐出现)
+    window.foamCover = new THREE.Mesh(
+        new THREE.CylinderGeometry(r * 0.95, r * 0.95, S(0.5), 48),
+        new THREE.MeshStandardMaterial({ color: 0xf5f5ee, transparent: true, opacity: 0, roughness: 0.9, metalness: 0.0 })
+    );
+    foamCover.position.set(pos.x, topY + S(0.3), pos.z);
+    scene.add(foamCover);
+}
+
+// ---------- 报警设备 ----------
+function buildAlarmDevices() {
+    // 声光报警器(防火堤四角)
+    const corners = [[-S(98), -S(75)], [S(98), -S(75)], [-S(98), S(75)], [S(98), S(75)]];
+    corners.forEach(([x, z]) => {
+        const pole = new THREE.Mesh(
+            new THREE.CylinderGeometry(S(0.25), S(0.3), S(6), 8),
+            new THREE.MeshStandardMaterial({ color: 0x556677, roughness: 0.5, metalness: 0.6 })
+        );
+        pole.position.set(x, S(3), z);
+        scene.add(pole);
+        const light = new THREE.Mesh(
+            new THREE.SphereGeometry(S(0.7), 10, 10),
+            new THREE.MeshBasicMaterial({ color: 0x331111 })
+        );
+        light.position.set(x, S(6.3), z);
+        scene.add(light);
+        alarmLights.push(light);
+    });
+    // 手动报警按钮(南防火墙外侧, 2号罐南侧, 贴南消防通道)
+    const abX = S(111), abZ = S(81.5);
+    const abPole = new THREE.Mesh(
+        new THREE.CylinderGeometry(S(0.2), S(0.25), S(3.5), 8),
+        new THREE.MeshStandardMaterial({ color: 0x666666, roughness: 0.5, metalness: 0.6 })
+    );
+    abPole.position.set(abX, S(1.75), abZ);
+    scene.add(abPole);
+    const abBox = new THREE.Mesh(
+        new THREE.BoxGeometry(S(1.2), S(1.6), S(0.6)),
+        new THREE.MeshStandardMaterial({ color: 0xcc0000, roughness: 0.4, metalness: 0.2 })
+    );
+    abBox.position.set(abX, S(3.8), abZ);
+    abBox.userData.label = '手动报警按钮 (南防火墙外·T301-2南侧)';
+    scene.add(abBox);
+    pickables.push(abBox);
+    window.alarmButton = abBox;
+    const abLabel = makeLabel('手动报警按钮', '#ff5252');
+    abLabel.position.set(abX, S(5.8), abZ);
+    abLabel.scale.set(S(10), S(5), 1);
+    scene.add(abLabel);
+    // 紧急切断阀现场关闭按钮(泵房外侧东立面, 靠东消防通道, P301-9泵位)
+    const esdX = PUMP.x + PUMP.w / 2 + S(1.2), esdZ = S(-16.6);
+    const esdPole = new THREE.Mesh(
+        new THREE.CylinderGeometry(S(0.2), S(0.25), S(3.5), 8),
+        new THREE.MeshStandardMaterial({ color: 0x666666, roughness: 0.5, metalness: 0.6 })
+    );
+    esdPole.position.set(esdX, S(1.75), esdZ);
+    scene.add(esdPole);
+    const esdBox = new THREE.Mesh(
+        new THREE.BoxGeometry(S(1.2), S(1.6), S(0.6)),
+        new THREE.MeshStandardMaterial({ color: 0xff8f00, roughness: 0.4, metalness: 0.2 })
+    );
+    esdBox.position.set(esdX, S(3.8), esdZ);
+    esdBox.userData.label = '紧急切断阀关闭按钮 (泵房外侧·P301-9)';
+    scene.add(esdBox);
+    pickables.push(esdBox);
+    window.esdButton = esdBox;
+    const esdLabel = makeLabel('紧急切断阀\n(泵房外侧)', '#ffab00');
+    esdLabel.position.set(esdX, S(5.8), esdZ);
+    esdLabel.scale.set(S(10), S(5), 1);
+    scene.add(esdLabel);
+    // 可燃气体探测器(罐顶)
+    TANKS.forEach(t => {
+        const tp = tankPos(t);
+        const det = new THREE.Mesh(
+            new THREE.BoxGeometry(S(0.8), S(1.2), S(0.8)),
+            new THREE.MeshStandardMaterial({ color: 0xffd54f, roughness: 0.5, metalness: 0.2 })
+        );
+        det.position.set(tp.x + S(t.D / 2 - 2), S(t.H + 1), tp.z);
+        det.userData.label = t.id + ' 可燃气体探测器';
+        scene.add(det);
+        pickables.push(det);
+    });
+}
+
+// ---------- 演练流程控制 ----------
+const PHASES = [
+    { name: '巡检发现火情', duration: 6 },
+    { name: '手动报警·关紧急切断阀', duration: 33 },
+    { name: '汇报调度·启动喷淋', duration: 10 },
+    { name: '停泵·关三级防控阀', duration: 16 },
+    { name: '开启泡沫·灭火', duration: 16 },
+    { name: '火势扑灭·演练结束', duration: 8 }
+];
+let phaseTimer = 0;
+let drillClock = 0; // 演练累计时间(模拟分钟)
+
+function startDrill() {
+    if (drillRunning) return;
+    drillRunning = true;
+    currentPhase = 0;
+    phaseTimer = 0;
+    drillClock = 0;
+    phaseEvents = {};
+    followPerson = -1; cameraMode = 'overview'; // 全景总览开始
+    document.getElementById('btn-start').disabled = true;
+    updatePhaseUI();
+    addLog('演练开始: 夜间巡检, 油槽工甲巡检至T301-2罐前', 'warn');
+    // 发现人(油槽工甲): T301-2罐前巡检
+    const t2pos = tankPos(TANKS[1]);
+    const p2 = personnel[2];
+    p2.group.position.set(t2pos.x + S(5), 0, t2pos.z - S(22));
+    p2.pos.set(t2pos.x + S(5), 0, t2pos.z - S(22));
+    // 其他人员在集合点
+    const muster = new THREE.Vector3(S(-135), 0, S(20));
+    [0, 1, 3].forEach(i => {
+        const sp = new THREE.Vector3(muster.x + i * S(4), 0, muster.z + i * S(3));
+        personnel[i].group.position.copy(sp);
+        personnel[i].pos.copy(sp);
+    });
+}
+
+function resetDrill() {
+    drillRunning = false;
+    currentPhase = -1;
+    phaseTimer = 0;
+    drillClock = 0;
+    fireIntensity = 0;
+    targetFireIntensity = 0;
+    waterRingOn = false;
+    foamOn = false;
+    phaseEvents = {};
+    document.getElementById('btn-start').disabled = false;
+    document.getElementById('btn-start').textContent = '开始演练';
+    document.getElementById('alarm-overlay').classList.remove('active');
+    document.getElementById('alarm-banner').style.display = 'none';
+    document.getElementById('success-banner').style.display = 'none';
+    alarmLights.forEach(l => l.material.color.setHex(0x331111));
+    if (window.alarmButton) window.alarmButton.material.color.setHex(0xcc0000);
+    if (window.esdButton) window.esdButton.material.color.setHex(0xff8f00);
+    pumpLight.color.setHex(0x44ff44);
+    valves.forEach(v => { v.closed = false; v.angle = 0; v.targetAngle = 0; v.wheel.rotation.z = 0; });
+    containValves.forEach(v => { if (v) { v.closed = false; v.angle = 0; v.targetAngle = 0; v.wheel.rotation.z = 0; } });
+    rainTask = '';
+    window.foamCover.material.opacity = 0;
+    personnel.forEach(p => { p.target = null; p.walking = false; p.arrived = false; p.radioPose = false; p.path = null; p.pathIndex = 0; });
+    document.querySelectorAll('.phase-item').forEach(el => el.className = 'phase-item');
+    document.getElementById('log-list').innerHTML = '';
+    updateStatus();
+    document.getElementById('st-time').textContent = '--:--';
+    addLog('系统重置, 等待开始演练');
+}
+
+function toggleSpeed() {
+    speedMul = speedMul === 1 ? 2 : speedMul === 2 ? 4 : 1;
+    document.getElementById('btn-speed').textContent = '速度 ×' + speedMul;
+}
+
+function updatePhaseUI() {
+    document.querySelectorAll('.phase-item').forEach(el => {
+        const ph = parseInt(el.dataset.ph);
+        el.className = 'phase-item' + (ph < currentPhase ? ' done' : ph === currentPhase ? ' active' : '');
+    });
+}
+
+function addLog(text, cls) {
+    const list = document.getElementById('log-list');
+    const div = document.createElement('div');
+    div.className = 'log-item' + (cls ? ' ' + cls : '');
+    const mm = String(Math.floor(drillClock)).padStart(2, '0');
+    const ss = String(Math.floor((drillClock % 1) * 60)).padStart(2, '0');
+    div.innerHTML = '<span class="time">' + mm + ':' + ss + '</span>' + text;
+    list.appendChild(div);
+    list.parentElement.scrollTop = list.parentElement.scrollHeight;
+}
+
+function updateStatus() {
+    const temp = document.getElementById('st-temp');
+    const tempVal = 32 + fireIntensity * 760;
+    temp.textContent = Math.round(tempVal) + '°C';
+    temp.className = 'val' + (fireIntensity > 0.01 ? ' danger' : ' safe');
+
+    const v2 = valveWheels['T301-2-OUT'];
+    document.getElementById('st-valve').textContent = v2 && v2.closed ? '已关闭' : '开启';
+    document.getElementById('st-valve').className = 'val' + (v2 && v2.closed ? ' safe' : '');
+
+    const pumpStopped = currentPhase >= 3 && phaseTimer > 6;
+    document.getElementById('st-pump').textContent = pumpStopped ? '已停运' : '运行中';
+    document.getElementById('st-pump').className = 'val' + (pumpStopped ? ' safe' : '');
+
+    document.getElementById('st-spray').textContent = waterRingOn ? '运行中' : '未启动';
+    document.getElementById('st-spray').className = 'val' + (waterRingOn ? ' safe' : '');
+    document.getElementById('st-foam').textContent = foamOn ? '喷射中' : '未启动';
+    document.getElementById('st-foam').className = 'val' + (foamOn ? ' safe' : '');
+    if (containValves.length) {
+        const closedCnt = containValves.filter(v => v && v.closed).length;
+        const allClosed = closedCnt === containValves.length;
+        document.getElementById('st-rain').textContent = allClosed ? '已关闭' : (closedCnt > 0 ? '关闭中 ' + closedCnt + '/3' : '开启');
+        document.getElementById('st-rain').className = 'val' + (allClosed ? ' safe' : '');
+    }
+}
+
+// ---------- 演练逻辑更新 ----------
+let phaseEvents = {};
+function updateDrill(dt) {
+    if (!drillRunning) return;
+    dt *= speedMul;
+    phaseTimer += dt;
+    drillClock += dt * 0.5; // 1秒真实时间≈0.5分钟演练时间
+    document.getElementById('st-time').textContent =
+        String(Math.floor(drillClock)).padStart(2, '0') + ':' + String(Math.floor((drillClock % 1) * 60)).padStart(2, '0');
+
+    const phase = currentPhase;
+    // key 格式: '{阶段}_{秒}', 到达该秒才触发(修复: 不能在第一帧全部触发, 否则演练瞬间结束、火势无法熄灭)
+    function once(key, fn) {
+        if (phaseEvents[key]) return;
+        const at = parseFloat(key.split('_')[1]) || 0;
+        if (phaseTimer >= at) { phaseEvents[key] = true; fn(); }
     }
 
-    function clearFoam() {
-        foamParticles.forEach(p => scene.remove(p));
-        foamParticles = [];
-    }
-
-    // ============ 冷却水效果 ============
-    function createWaterEffect() {
-        clearWater();
-        [tanks[0], tanks[2]].forEach(tank => {
-            if (!tank) return;
-            const cx = tank.config.x;
-            const particleCount = 60;
-            const geometry = new THREE.BufferGeometry();
-            const positions = new Float32Array(particleCount * 3);
-            const velocities = [];
-
-            for (let i = 0; i < particleCount; i++) {
-                const angle = Math.random() * Math.PI * 2;
-                const r = tank.config.r + 0.5;
-                positions[i*3] = cx + Math.cos(angle) * r;
-                positions[i*3+1] = tank.config.h + 1;
-                positions[i*3+2] = Math.sin(angle) * r;
-                velocities.push({
-                    x: Math.cos(angle) * 0.02,
-                    y: -0.08 - Math.random() * 0.04,
-                    z: Math.sin(angle) * 0.02,
-                    life: Math.random()
-                });
-            }
-            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-            const material = new THREE.PointsMaterial({
-                size: 0.5,
-                color: 0x4488FF,
-                transparent: true,
-                opacity: 0.7,
-                depthWrite: false
+    switch (phase) {
+        case 0: // 巡检发现火情
+            once('0_2', () => {
+                targetFireIntensity = 0.3;
+                addLog('油槽工甲巡检至T301-2罐前, 发现浮盘密封圈处有明火!', 'warn');
             });
-            const points = new THREE.Points(geometry, material);
-            points.userData = { velocities, cx, radius: tank.config.r, height: tank.config.h };
-            scene.add(points);
-            waterParticles.push(points);
-        });
+            once('0_4', () => {
+                targetFireIntensity = 0.6;
+                personnel[2].radioPose = true;
+                addLog('油槽工甲: "报告班长! T301-2密封圈着火, 火焰沿密封圈蔓延, 约2m高!"', 'warn');
+            });
+            break;
+        case 1: // 手动报警·关紧急切断阀
+            once('1_0', () => {
+                personnel[2].radioPose = false;
+                addLog('班长: "收到! 立即去按手动报警, 再到泵房关掉紧急切断阀!"', 'warn');
+                // 油槽工甲: 罐前→绕T301-2东侧→东墙z=50梯口出墙→南防火墙外手动报警按钮(111,81.5)
+                setPersonPath(personnel[2], [[111, 10], [112, 50], [124, 50], [124, 81], [111, 81]],
+                    new THREE.Vector3(S(111), 0, S(81.5)));
+            });
+            once('1_11', () => {
+                // 按下手动报警按钮
+                document.getElementById('alarm-overlay').classList.add('active');
+                document.getElementById('alarm-banner').style.display = 'block';
+                alarmLights.forEach(l => l.material.color.setHex(0xff2200));
+                if (window.alarmButton) window.alarmButton.material.color.setHex(0xff0000);
+                addLog('油槽工甲按下手动报警按钮! 声光报警器启动!', 'warn');
+            });
+            once('1_13', () => {
+                // 油槽工甲: 南墙外报警按钮→沿南消防通道东行→东消防通道北上→泵房外侧东立面紧急切断阀按钮
+                setPersonPath(personnel[2], [[124, 84], [145, 84], [145, -20]],
+                    new THREE.Vector3(PUMP.x + PUMP.w / 2 + S(1.2), 0, S(-16.6)));
+                addLog('油槽工甲奔向泵房外侧, 准备关闭紧急切断阀!');
+            });
+            once('1_30', () => {
+                // 按下紧急切断阀关闭按钮(泵房P301-9)
+                if (window.esdButton) window.esdButton.material.color.setHex(0xffcc00);
+                valves.forEach(v => { v.targetAngle = Math.PI * 6; });
+                addLog('油槽工甲按下紧急切断阀关闭按钮!', 'warn');
+            });
+            once('1_31', () => {
+                valves.forEach(v => { v.closed = true; });
+                targetFireIntensity = 0.85;
+                addLog('T301-2紧急切断阀已关闭! 进出料管线切断!', 'ok');
+            });
+            break;
+        case 2: // 汇报调度·启动喷淋
+            once('2_0', () => {
+                personnel[0].radioPose = true;
+                addLog('班长: "报告调度! T301-2浮盘密封圈着火, 已按手动报警并关闭紧急切断阀, 请求支援!"', 'warn');
+            });
+            once('2_3', () => {
+                addLog('调度: 收到! 立即启动罐区火灾应急预案II级响应, 远程开启喷淋冷却!', 'warn');
+            });
+            once('2_4', () => {
+                waterRingOn = true;
+                addLog('调度: 已远程开启T301-2及相邻罐喷淋盘管, 罐壁冷却水已投用!', 'ok');
+            });
+            once('2_5', () => {
+                personnel[0].radioPose = false;
+                addLog('班长: 各岗位注意! 全员进入罐区, 沿罐外走廊行进!');
+                // 人员出发 — 沿罐外走廊行进
+                const t2pos = tankPos(TANKS[1]);
+                // 班长: 西北走廊指挥位
+                setPersonPath(personnel[0], [[-112, -32], [-112, -55]],
+                    new THREE.Vector3(S(-112), 0, S(-55)));
+                // 计量员: 西侧走廊→南侧→T301-2上风口监测位
+                setPersonPath(personnel[1], [[-112, 32], [-112, 62], [59, 62], [59, 24]],
+                    new THREE.Vector3(t2pos.x - S(25), 0, t2pos.z - S(8)));
+                // 油槽工甲: 泵房外侧→东消防通道→东墙z=-32梯口进罐区→东走廊北上→出北墙x=84梯口→雨水外排阀/事故水阀
+                setPersonPath(personnel[2], [[145, -20], [145, -32], [124, -32], [112, -32], [112, -70], [84, -70], [84, -84]],
+                    new THREE.Vector3(rainValve.group.position.x + S(2.5), 0, rainValve.group.position.z + S(2.5)));
+                rainTask = 'going';
+                // 油槽工乙: 西侧走廊→北侧→泵房
+                setPersonPath(personnel[3], [[-112, -32], [-112, -62], [112, -62], [112, -32]],
+                    new THREE.Vector3(PUMP.x - PUMP.w / 2 - S(3), 0, PUMP.z));
+            });
+            once('2_9', () => {
+                addLog('计量员到达T301-2上风口监测位, 开始记录液位温度', 'ok');
+                addLog('油槽工乙到达泵房, 准备停运输油泵', 'ok');
+            });
+            break;
+        case 3: // 停泵·关三级防控阀
+            once('3_0', () => {
+                addLog('进场分两组作业: 油槽工乙负责工艺处置(停泵), 油槽工甲负责关闭三级防控阀门');
+                addLog('油槽工乙开始停运输油泵...');
+            });
+            once('3_3', () => {
+                addLog('计量员: 报告班长, T301-2液位12.8m、温度42℃, 无异常升高, 浮盘状态稳定');
+            });
+            once('3_5', () => {
+                pumpLight.color.setHex(0xff4444);
+                addLog('油槽工乙: 输油泵已全部停运! 工艺处置完成!', 'ok');
+            });
+            once('3_8', () => {
+                addLog('油槽工甲到达三级防控阀区, 开始依次关闭...', 'ok');
+            });
+            once('3_9', () => {
+                if (initRainValve) { initRainValve.closed = true; initRainValve.targetAngle = Math.PI * 6; }
+                addLog('油槽工甲: 初期雨水阀已关闭!', 'ok');
+            });
+            once('3_11', () => {
+                if (rainValve) { rainValve.closed = true; rainValve.targetAngle = Math.PI * 6; }
+                addLog('油槽工甲: 雨水外排阀已关闭!', 'ok');
+            });
+            once('3_13', () => {
+                if (accidentValve) { accidentValve.closed = true; accidentValve.targetAngle = Math.PI * 6; }
+                addLog('油槽工甲: 事故水阀已关闭! 三级防控阀门全部关闭, 消防污水受控!', 'ok');
+            });
+            once('3_14', () => {
+                addLog('班长: 报告调度, 工艺处置与三级防控关阀完毕, 请求开启泡沫系统!');
+                addLog('调度: 收到, 油槽工乙立即开启泡沫!');
+            });
+            break;
+        case 4: // 开启泡沫·灭火
+            once('4_0', () => {
+                const t2pos = tankPos(TANKS[1]);
+                addLog('班长: 油槽工乙立即开启泡沫系统!');
+                // 油槽工乙沿东走廊(x=112)南下→T301-2泡沫产生器
+                setPersonPath(personnel[3], [[112, -32], [112, 36]],
+                    new THREE.Vector3(t2pos.x + S(23), 0, t2pos.z + S(4)));
+            });
+            once('4_4', () => {
+                foamOn = true;
+                addLog('油槽工乙开启泡沫管线阀门, 泡沫产生器向T301-2浮盘喷射泡沫!', 'ok');
+            });
+            once('4_7', () => {
+                targetFireIntensity = 0.5;
+                addLog('泡沫覆盖浮盘液面, 喷淋冷却罐壁, 火势明显减弱');
+                addLog('计量员: 报告, T301-2液位12.6m、温度39℃, 液位温度均下降, 灭火有效');
+            });
+            once('4_11', () => {
+                targetFireIntensity = 0.2;
+                addLog('泡沫层持续覆盖, 火焰收缩至局部区域', 'ok');
+            });
+            once('4_14', () => {
+                targetFireIntensity = 0.05;
+                addLog('密封圈明火基本扑灭, 仅剩零星火点');
+            });
+            break;
+        case 5: // 结束
+            once('5_0', () => {
+                targetFireIntensity = 0;
+                document.getElementById('alarm-overlay').classList.remove('active');
+                document.getElementById('alarm-banner').style.display = 'none';
+                alarmLights.forEach(l => l.material.color.setHex(0x113311));
+                addLog('明火全部扑灭! 泡沫覆盖层完整, 无复燃迹象', 'ok');
+            });
+            once('5_2', () => {
+                waterRingOn = false;
+                foamOn = false;
+                addLog('火势已扑灭, 停止冷却喷淋和泡沫供给, 泡沫覆盖层保持完整', 'ok');
+            });
+            once('5_3', () => {
+                addLog('班长: 报告调度, T301-2火灾已扑灭, 请求解除应急响应', 'ok');
+                addLog('调度: 同意解除II级应急响应, 安排人员现场监护');
+            });
+            once('5_6', () => {
+                // 确保火焰完全熄灭(兜底), 杜绝"演练结束仍在着火"
+                fireIntensity = 0;
+                targetFireIntensity = 0;
+                if (fireGlow) fireGlow.intensity = 0;
+                document.getElementById('success-banner').style.display = 'block';
+                addLog('演练结束! 用时约' + Math.round(drillClock) + '分钟, 各系统动作正常', 'ok');
+                addLog('讲评: 关阀及时、喷淋覆盖到位、泡沫供给充足, 演练达到预期目标', 'ok');
+                drillRunning = false;
+                document.getElementById('btn-start').disabled = false;
+                document.getElementById('btn-start').textContent = '重新演练';
+            });
+            break;
     }
 
-    function clearWater() {
-        waterParticles.forEach(p => scene.remove(p));
-        waterParticles = [];
+    // 阶段切换
+    if (phase < PHASES.length - 1 && phaseTimer >= PHASES[phase].duration) {
+        currentPhase++;
+        phaseTimer = 0;
+        updatePhaseUI();
+        addLog('【阶段' + (currentPhase + 1) + '】' + PHASES[currentPhase].name, 'warn');
     }
 
-    // ============ 步骤切换 ============
-    function showStep(index) {
-        currentStep = index;
-        const step = STEPS[index];
-        
-        document.getElementById('step-title').textContent = `第${index + 1}步：${step.title}`;
-        document.getElementById('step-desc').textContent = step.desc;
-
-        // 更新指示器
-        document.querySelectorAll('.step-dot').forEach((dot, i) => {
-            dot.classList.remove('active', 'completed');
-            if (i === index) dot.classList.add('active');
-            else if (i < index) dot.classList.add('completed');
-        });
-
-        // 相机动画
-        animateCamera(step.camera);
-
-        // 场景状态
-        updateSceneState(index);
+    // 火势渐变已移至 updateParticles(始终运行), 避免演练结束后 fireIntensity 冻结导致火焰不灭
+    // 泡沫覆盖
+    if (foamOn && window.foamCover.material.opacity < 0.85) {
+        window.foamCover.material.opacity += dt * 0.06;
+    }
+    // 阀门手轮旋转
+    valves.forEach(v => {
+        if (v.angle < v.targetAngle) {
+            v.angle += dt * 3.5;
+            v.wheel.rotation.z = v.angle;
+        }
+    });
+    // 三级防控阀手轮旋转(关闭时转向目标角度)
+    containValves.forEach(v => {
+        if (v && v.angle < v.targetAngle) {
+            v.angle += dt * 3.5;
+            v.wheel.rotation.z = v.angle;
+        }
+    });
+    // 油槽工甲到达三级防控阀区
+    if (rainTask === 'going' && personnel[2] && personnel[2].arrived) {
+        rainTask = 'done';
+    }
+    // 泵运转动画
+    const pumpStopped = currentPhase >= 3 && phaseTimer > 6;
+    pumpImpellers.forEach((imp, i) => {
+        if (!pumpStopped) imp.rotation.x += dt * (8 + i * 2);
+    });
+    // 报警灯闪烁
+    if (currentPhase >= 1 && currentPhase < 5) {
+        const blink = Math.sin(Date.now() * 0.008) > 0;
+        alarmLights.forEach(l => l.material.color.setHex(blink ? 0xff2200 : 0x661100));
     }
 
-    function updateSceneState(index) {
-        // 火灾效果：步骤0-6都显示（灭火过程中逐渐减弱）
-        if (index >= 0) {
-            setFireVisible(true);
-            if (index >= 3) {
-                // 泡沫灭火后火焰减弱
-                fireParticles.forEach(p => p.material.opacity = Math.max(0.2, 0.8 - (index - 3) * 0.2));
+    updateStatus();
+}
+
+// ---------- 人员移动 ----------
+function setPersonTarget(p, target) {
+    p.target = target;
+    p.walking = true;
+    p.arrived = false;
+    p.radioPose = false;
+    p.path = null;
+    p.pathIndex = 0;
+}
+
+// 沿罐外路径行走( waypoints: [{x,z}...] 单位:米, 自动转S() )
+function setPersonPath(p, waypointsM, finalTarget) {
+    p.path = waypointsM.map(w => new THREE.Vector3(S(w[0]), 0, S(w[1])));
+    p.pathIndex = 0;
+    p.target = finalTarget || p.path[p.path.length - 1];
+    p.walking = true;
+    p.arrived = false;
+    p.radioPose = false;
+}
+
+function updatePersonnel(dt) {
+    dt *= speedMul;
+    personnel.forEach(p => {
+        if (p.walking) {
+            // 确定当前目标点(路径中间点 or 最终目标)
+            let curTarget = p.target;
+            if (p.path && p.pathIndex < p.path.length) {
+                curTarget = p.path[p.pathIndex];
             }
-            if (index >= 6) {
-                setFireVisible(false);
+            if (curTarget) {
+                const dir = new THREE.Vector3().subVectors(curTarget, p.pos);
+                dir.y = 0;
+                const dist = dir.length();
+                if (dist < S(1.5)) {
+                    // 到达当前路径点, 前进到下一个
+                    if (p.path && p.pathIndex < p.path.length - 1) {
+                        p.pathIndex++;
+                    } else if (p.path && p.pathIndex === p.path.length - 1 && p.target !== p.path[p.path.length - 1]) {
+                        // 路径走完但还有最终目标
+                        p.path = null;
+                    } else {
+                        // 全部到达
+                        p.walking = false;
+                        p.arrived = true;
+                        p.path = null;
+                    }
+                } else {
+                    dir.normalize();
+                    p.pos.addScaledVector(dir, p.speed * dt);
+                    p.group.position.copy(p.pos);
+                    p.group.rotation.y = Math.atan2(dir.x, dir.z);
+                    p.walkPhase += dt * 10;
+                    p.armL.rotation.x = Math.sin(p.walkPhase) * 0.6;
+                    p.armR.rotation.x = -Math.sin(p.walkPhase) * 0.6;
+                    p.armL.rotation.z = 0.25;
+                    p.armR.rotation.z = -0.25;
+                    p.group.position.y = Math.abs(Math.sin(p.walkPhase)) * S(0.3);
+                }
             }
         }
-
-        // 阀门状态
-        valves.forEach((v, i) => {
-            if (index >= 2) {
-                v.children[2].rotation.y = Math.PI / 2; // 关闭状态
-                v.children[0].material.color.setHex(0x339933);
+        // 对讲机姿态(优先级最高, 不需要arrived, 只要不在走路)
+        if (p.radioPose && !p.walking && drillRunning) {
+            p.armR.rotation.x = -2.2;
+            p.armR.rotation.z = -0.5;
+            p.armL.rotation.x = -0.3;
+            p.armL.rotation.z = 0.25;
+        }
+        // 战位操作动画(到位后按角色执行, 与演练进程同步)
+        else if (p.arrived && !p.walking && drillRunning) {
+            if (p.role === '关阀·报警' && currentPhase === 3) {
+                // 关阀动作: 双手转动手轮
+                p.armL.rotation.x = -1.2;
+                p.armR.rotation.x = -1.2;
+                p.armL.rotation.z = Math.sin(Date.now() * 0.005) * 0.3;
+                p.armR.rotation.z = -Math.sin(Date.now() * 0.005) * 0.3;
+            } else if (p.role === '停泵·泡沫' && currentPhase === 3) {
+                // 泵房操作: 按停泵按钮
+                p.armR.rotation.x = -0.9 + Math.sin(Date.now() * 0.004) * 0.2;
+                p.armR.rotation.z = -0.25;
+                p.armL.rotation.x = 0;
+                p.armL.rotation.z = 0.25;
+            } else if (p.role === '停泵·泡沫' && currentPhase === 4) {
+                // 泡沫操作: 开启泡沫阀
+                p.armL.rotation.x = -1.1;
+                p.armR.rotation.x = -1.1 + Math.sin(Date.now() * 0.006) * 0.15;
+                p.armL.rotation.z = 0.25;
+                p.armR.rotation.z = -0.25;
+            } else if (p.role === '计量监测' && (currentPhase >= 2 && currentPhase <= 4)) {
+                // 计量员: 手持记录板监测(低头看+记录)
+                p.armL.rotation.x = -0.8;
+                p.armL.rotation.z = 0.4;
+                p.armR.rotation.x = -0.6 + Math.sin(Date.now() * 0.003) * 0.1;
+                p.armR.rotation.z = -0.3;
             } else {
-                v.children[2].rotation.y = 0;
-                v.children[0].material.color.setHex(0xCC3333);
-            }
-        });
-
-        // 泡沫
-        if (index >= 3 && index < 6) {
-            createFoamEffect();
-        } else {
-            clearFoam();
-        }
-
-        // 冷却水
-        if (index >= 4 && index < 6) {
-            createWaterEffect();
-        } else {
-            clearWater();
-        }
-
-        // 消防车
-        if (index >= 6) {
-            fireTruck.visible = true;
-        } else {
-            fireTruck.visible = false;
-        }
-    }
-
-    // ============ 相机动画 ============
-    function animateCamera(target) {
-        const start = {
-            x: camera.position.x, y: camera.position.y, z: camera.position.z,
-            tx: controls.target.x, ty: controls.target.y, tz: controls.target.z
-        };
-        const duration = 1500;
-        const startTime = Date.now();
-
-        function update() {
-            const elapsed = Date.now() - startTime;
-            const t = Math.min(elapsed / duration, 1);
-            const ease = 1 - Math.pow(1 - t, 3); // easeOutCubic
-
-            camera.position.set(
-                start.x + (target.x - start.x) * ease,
-                start.y + (target.y - start.y) * ease,
-                start.z + (target.z - start.z) * ease
-            );
-            controls.target.set(
-                start.tx + (target.tx - start.tx) * ease,
-                start.ty + (target.ty - start.ty) * ease,
-                start.tz + (target.tz - start.tz) * ease
-            );
-
-            if (t < 1) requestAnimationFrame(update);
-        }
-        update();
-    }
-
-    // ============ 控制 ============
-    function nextStep() {
-        if (currentStep < STEPS.length - 1) {
-            showStep(currentStep + 1);
-        } else {
-            showStep(0); // 循环
-        }
-    }
-
-    function prevStep() {
-        if (currentStep > 0) {
-            showStep(currentStep - 1);
-        }
-    }
-
-    function toggleAuto() {
-        autoPlay = !autoPlay;
-        const btn = document.getElementById('btn-auto');
-        if (autoPlay) {
-            btn.textContent = '暂停';
-            btn.classList.add('playing');
-            autoTimer = setInterval(() => {
-                if (currentStep < STEPS.length - 1) {
-                    nextStep();
-                } else {
-                    toggleAuto();
-                }
-            }, 5000);
-        } else {
-            btn.textContent = '自动播放';
-            btn.classList.remove('playing');
-            clearInterval(autoTimer);
-        }
-    }
-
-    function buildStepIndicator() {
-        const container = document.getElementById('step-indicator');
-        STEPS.forEach((_, i) => {
-            const dot = document.createElement('div');
-            dot.className = 'step-dot';
-            dot.onclick = () => showStep(i);
-            container.appendChild(dot);
-        });
-    }
-
-    function showHint() {
-        const hint = document.getElementById('hint');
-        hint.classList.add('show');
-        setTimeout(() => hint.classList.remove('show'), 3000);
-    }
-
-    // ============ 动画循环 ============
-    function animate() {
-        requestAnimationFrame(animate);
-        const delta = clock.getDelta();
-
-        // 更新火焰粒子
-        fireParticles.forEach(points => {
-            if (!points.visible) return;
-            const positions = points.geometry.attributes.position.array;
-            const vels = points.userData.velocities;
-            const h = points.userData.height;
-            const r = points.userData.radius;
-
-            for (let i = 0; i < vels.length; i++) {
-                vels[i].life += delta * 0.5;
-                if (vels[i].life > 1) {
-                    vels[i].life = 0;
-                    const angle = Math.random() * Math.PI * 2;
-                    const rad = Math.random() * (r - 1);
-                    positions[i*3] = Math.cos(angle) * rad;
-                    positions[i*3+1] = h - 1;
-                    positions[i*3+2] = Math.sin(angle) * rad;
-                } else {
-                    positions[i*3] += vels[i].x;
-                    positions[i*3+1] += vels[i].y;
-                    positions[i*3+2] += vels[i].z;
-                }
-            }
-            points.geometry.attributes.position.needsUpdate = true;
-        });
-
-        // 更新烟雾
-        smokeParticles.forEach(points => {
-            if (!points.visible) return;
-            const positions = points.geometry.attributes.position.array;
-            const vels = points.userData.velocities;
-            const h = points.userData.height;
-
-            for (let i = 0; i < vels.length; i++) {
-                vels[i].life += delta * 0.2;
-                if (vels[i].life > 1) {
-                    vels[i].life = 0;
-                    const angle = Math.random() * Math.PI * 2;
-                    positions[i*3] = Math.cos(angle) * 2;
-                    positions[i*3+1] = h + 2;
-                    positions[i*3+2] = Math.sin(angle) * 2;
-                } else {
-                    positions[i*3] += vels[i].x;
-                    positions[i*3+1] += vels[i].y;
-                    positions[i*3+2] += vels[i].z;
-                }
-            }
-            points.geometry.attributes.position.needsUpdate = true;
-        });
-
-        // 更新泡沫
-        foamParticles.forEach(points => {
-            const positions = points.geometry.attributes.position.array;
-            const vels = points.userData.velocities;
-            for (let i = 0; i < vels.length; i++) {
-                vels[i].life += delta * 0.3;
-                if (vels[i].life > 1) {
-                    vels[i].life = 0;
-                    positions[i*3] = 3 + (Math.random() - 0.5) * 2;
-                    positions[i*3+1] = 16;
-                    positions[i*3+2] = 3 + (Math.random() - 0.5) * 2;
-                } else {
-                    positions[i*3] += vels[i].x;
-                    positions[i*3+1] += vels[i].y;
-                    positions[i*3+2] += vels[i].z;
-                }
-            }
-            points.geometry.attributes.position.needsUpdate = true;
-        });
-
-        // 更新冷却水
-        waterParticles.forEach(points => {
-            const positions = points.geometry.attributes.position.array;
-            const vels = points.userData.velocities;
-            const cx = points.userData.cx;
-            const h = points.userData.height;
-            const r = points.userData.radius;
-            for (let i = 0; i < vels.length; i++) {
-                vels[i].life += delta * 0.4;
-                if (vels[i].life > 1) {
-                    vels[i].life = 0;
-                    const angle = Math.random() * Math.PI * 2;
-                    positions[i*3] = cx + Math.cos(angle) * (r + 0.5);
-                    positions[i*3+1] = h + 1;
-                    positions[i*3+2] = Math.sin(angle) * (r + 0.5);
-                } else {
-                    positions[i*3] += vels[i].x;
-                    positions[i*3+1] += vels[i].y;
-                    positions[i*3+2] += vels[i].z;
-                }
-            }
-            points.geometry.attributes.position.needsUpdate = true;
-        });
-
-        // 消防车警灯闪烁
-        if (fireTruck && fireTruck.visible) {
-            const lightBar = fireTruck.children[fireTruck.children.length - 1];
-            if (lightBar) {
-                lightBar.material.color.setHex(
-                    Math.sin(Date.now() * 0.01) > 0 ? 0xFF0000 : 0x0000FF
-                );
+                // 立正待命
+                p.armL.rotation.x = 0;
+                p.armR.rotation.x = 0;
+                p.armL.rotation.z = 0.25;
+                p.armR.rotation.z = -0.25;
             }
         }
+    });
+}
 
-        controls.update();
-        renderer.render(scene, camera);
+// ---------- 粒子更新 ----------
+function updateParticles(dt) {
+    const adt = dt * speedMul;
+    // 火势渐变(每帧始终运行): 保证扑灭后火焰/辉光完全熄灭, 不会因演练结束而冻结残留火苗
+    fireIntensity += (targetFireIntensity - fireIntensity) * Math.min(adt, 0.08) * 1.15;
+    if (targetFireIntensity <= 0.001 && fireIntensity < 0.02) fireIntensity -= adt * 0.06;
+    if (fireIntensity < 0.005) fireIntensity = 0;
+    if (fireGlow) {
+        fireGlow.intensity = fireIntensity * 3.5 + Math.sin(Date.now() * 0.01) * fireIntensity * 0.8;
     }
+    [fireParticles, smokeParticles, foamParticles, ...spraySystems].forEach(sys => {
+        const pos = sys.positions, col = sys.colors, siz = sys.sizes;
+        for (let i = 0; i < sys.count; i++) {
+            sys.updateFn(sys.particles[i], adt, i);
+            const p = sys.particles[i];
+            const idx = i * 3;
+            if (p.active) {
+                pos[idx] = p.x; pos[idx + 1] = p.y; pos[idx + 2] = p.z;
+            } else {
+                pos[idx + 1] = -100; // 隐藏
+                siz[i] = 0;
+            }
+        }
+        sys.geo.attributes.position.needsUpdate = true;
+        sys.geo.attributes.color.needsUpdate = true;
+        sys.geo.attributes.size.needsUpdate = true;
+    });
+}
 
-    // ============ 响应式 ============
-    function onResize() {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
+// ---------- 视角 ----------
+function setView(name) {
+    followPerson = -1;
+    cameraMode = 'overview';
+    const t2 = tankPos(TANKS[1]);
+    const views = {
+        overview: { pos: [S(150), S(105), S(170)], target: [0, S(4), 0] },
+        fire: { pos: [t2.x + S(55), S(30), t2.z + S(55)], target: [t2.x, S(TANK_H - 2), t2.z] },
+        pump: { pos: [PUMP.x - S(38), S(16), S(26)], target: [PUMP.x, S(3), PUMP.z] },
+        top: { pos: [0, S(260), S(1)], target: [0, 0, 0] }
+    };
+    const v = views[name] || views.overview;
+    animateCamera(v.pos, v.target);
+}
+
+function animateCamera(pos, target) {
+    const startPos = camera.position.clone();
+    const startTarget = controls.target.clone();
+    const endPos = new THREE.Vector3(pos[0], pos[1], pos[2]);
+    const endTarget = new THREE.Vector3(target[0], target[1], target[2]);
+    let t = 0;
+    function step() {
+        t += 0.03;
+        if (t >= 1) {
+            camera.position.copy(endPos);
+            controls.target.copy(endTarget);
+            return;
+        }
+        const e = 1 - Math.pow(1 - t, 3); // easeOutCubic
+        camera.position.lerpVectors(startPos, endPos, e);
+        controls.target.lerpVectors(startTarget, endTarget, e);
+        requestAnimationFrame(step);
     }
+    step();
+}
 
-    // ============ 启动 ============
-    init();
-    </script>
+// ---------- 悬停提示 ----------
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+function onHover(e) {
+    mouse.x = (e.clientX / innerWidth) * 2 - 1;
+    mouse.y = -(e.clientY / innerHeight) * 2 + 1;
+    raycaster.setFromCamera(mouse, camera);
+    const hits = raycaster.intersectObjects(pickables, false);
+    const tip = document.getElementById('tooltip');
+    if (hits.length > 0 && hits[0].object.userData.label) {
+        tip.style.display = 'block';
+        tip.style.left = (e.clientX + 12) + 'px';
+        tip.style.top = (e.clientY + 12) + 'px';
+        tip.textContent = hits[0].object.userData.label;
+    } else {
+        tip.style.display = 'none';
+    }
+}
+
+function onResize() {
+    camera.aspect = innerWidth / innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(innerWidth, innerHeight);
+}
+
+// ---------- 主循环 ----------
+// ---------- 人物视角跟随(手动切换) ----------
+let followPerson = -1; // -1=全景总览, 0~3=跟随对应人员
+let cameraMode = 'overview'; // 'overview'=全景, 'follow'=跟随特写
+function camToPerson(idx) {
+    followPerson = idx;
+    cameraMode = 'follow';
+}
+function updateFollowCamera(dt) {
+    if (!drillRunning) return;
+    if (cameraMode === 'overview' || followPerson < 0) return; // 全景时不干预相机
+    if (!personnel[followPerson]) return;
+    const p = personnel[followPerson];
+    const pp = p.group.position;
+    const behind = new THREE.Vector3(pp.x - S(12), pp.y + S(8), pp.z - S(14));
+    camera.position.lerp(behind, dt * 1.5);
+    controls.target.lerp(new THREE.Vector3(pp.x, pp.y + S(3), pp.z), dt * 2.0);
+}
+function updateFollowTarget() {
+    if (!drillRunning) { followPerson = -1; cameraMode = 'overview'; return; }
+}
+
+function animate() {
+    requestAnimationFrame(animate);
+    const dt = Math.min(clock.getDelta(), 0.05);
+    controls.update();
+    updateDrill(dt);
+    updatePersonnel(dt);
+    updateParticles(dt);
+    updateFollowTarget();
+    updateFollowCamera(dt);
+    renderer.render(scene, camera);
+}
+
+init();
+</script>
 </body>
 </html>
