@@ -118,6 +118,85 @@ canvas { display: block; }
     border-top-color: #4af; border-radius: 50%; animation: spin 0.8s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
+/* ===== 角色实操(游戏)模式 ===== */
+#mode-select {
+    position: fixed; inset: 0; z-index: 500; display: none;
+    background: radial-gradient(circle at 50% 30%, rgba(20,45,80,0.96), rgba(8,16,30,0.98));
+    align-items: center; justify-content: center; flex-direction: column; color: #fff;
+}
+#mode-select.show { display: flex; }
+#mode-select h2 { font-size: 22px; margin-bottom: 6px; }
+#mode-select .sub { font-size: 13px; opacity: 0.7; margin-bottom: 28px; }
+.mode-cards { display: flex; gap: 22px; flex-wrap: wrap; justify-content: center; }
+.mode-card {
+    width: 230px; padding: 26px 20px; border-radius: 14px; cursor: pointer;
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(120,180,255,0.3);
+    text-align: center; transition: all 0.2s;
+}
+.mode-card:hover { background: rgba(60,130,220,0.25); border-color: #4af; transform: translateY(-3px); }
+.mode-card .ic { font-size: 40px; margin-bottom: 10px; }
+.mode-card .t { font-size: 17px; font-weight: 700; margin-bottom: 6px; }
+.mode-card .d { font-size: 12px; opacity: 0.7; line-height: 1.5; }
+#role-select { margin-top: 26px; display: none; text-align: center; }
+#role-select.show { display: block; }
+#role-select .rt { font-size: 14px; margin-bottom: 12px; color: #9cf; }
+.role-grid { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+.role-card {
+    padding: 12px 18px; border-radius: 10px; cursor: pointer; min-width: 120px;
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); transition: all 0.2s;
+}
+.role-card:hover { background: rgba(60,130,220,0.3); }
+.role-card.disabled { opacity: 0.4; cursor: not-allowed; }
+.role-card .rn { font-size: 14px; font-weight: 700; }
+.role-card .rr { font-size: 11px; opacity: 0.65; margin-top: 3px; }
+#mode-cancel { margin-top: 24px; padding: 8px 24px; border-radius: 8px; cursor: pointer;
+    background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.25); color: #cde; font-size: 13px; }
+/* 游戏任务面板 */
+#game-panel {
+    position: fixed; top: 70px; left: 15px; z-index: 120; display: none; width: 268px;
+    background: rgba(5,15,30,0.93); border: 1px solid rgba(255,180,60,0.4);
+    border-radius: 10px; padding: 12px 14px; color: #fff;
+}
+#game-panel.show { display: block; }
+#game-panel .gp-role { font-size: 13px; font-weight: 700; color: #ffb74d; margin-bottom: 4px; }
+#game-panel .gp-time { font-size: 11px; opacity: 0.7; margin-bottom: 8px; }
+#game-panel .gp-instr {
+    font-size: 12px; background: rgba(255,150,30,0.15); border-left: 3px solid #ff9800;
+    padding: 7px 9px; border-radius: 4px; margin-bottom: 9px; line-height: 1.5; min-height: 34px;
+}
+.gtask { display: flex; align-items: center; gap: 7px; padding: 3px 0; font-size: 11.5px; color: #6a8090; }
+.gtask .gdot { width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; display: flex;
+    align-items: center; justify-content: center; font-size: 10px; background: #223; border: 1px solid #445; }
+.gtask.active { color: #fff; font-weight: 600; }
+.gtask.active .gdot { background: #ff9800; border-color: #ffb74d; box-shadow: 0 0 6px #ff9800; }
+.gtask.done { color: #7dcea0; }
+.gtask.done .gdot { background: #4caf50; border-color: #66bb6a; }
+#game-radio-btn {
+    display: none; width: 100%; margin-top: 8px; padding: 11px; border: none; border-radius: 8px;
+    background: #1976d2; color: #fff; font-size: 13px; font-weight: 700; cursor: pointer;
+    animation: bannerPulse 1.2s infinite;
+}
+#game-radio-btn.show { display: block; }
+#game-wrong { font-size: 11px; color: #ff8a80; margin-top: 7px; min-height: 14px; }
+/* 评分弹窗 */
+#game-score {
+    position: fixed; inset: 0; z-index: 600; display: none;
+    background: rgba(5,10,20,0.85); align-items: center; justify-content: center;
+}
+#game-score.show { display: flex; }
+.score-box {
+    width: 320px; background: linear-gradient(160deg, #14304f, #0c1a2e);
+    border: 1px solid rgba(120,180,255,0.4); border-radius: 16px; padding: 26px; text-align: center; color: #fff;
+}
+.score-box .grade { font-size: 46px; font-weight: 800; margin: 6px 0; }
+.score-box .grade.s { color: #ffd54f; } .score-box .grade.a { color: #81c784; }
+.score-box .grade.b { color: #4fc3f7; } .score-box .grade.c { color: #ff8a65; }
+.score-box h3 { font-size: 16px; margin-bottom: 4px; }
+.score-rows { margin: 16px 0; text-align: left; }
+.score-rows .sr { display: flex; justify-content: space-between; padding: 5px 0; font-size: 13px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+.score-rows .sr span:last-child { font-weight: 700; color: #9cf; }
+.score-box button { margin-top: 8px; padding: 10px 26px; border: none; border-radius: 8px;
+    background: #e53935; color: #fff; font-size: 14px; font-weight: 700; cursor: pointer; }
 </style>
 </head>
 <body>
@@ -128,7 +207,7 @@ canvas { display: block; }
     <p>中石油燃料油温州分公司 · 生产一车间 · T301-2外浮顶罐30000m³浮盘密封圈火灾 · 参演人员4人</p>
 </div>
 <div id="ctrl-panel">
-    <button class="ctrl-btn" id="btn-start" onclick="startDrill()">开始演练</button>
+    <button class="ctrl-btn" id="btn-start" onclick="openModeSelect()">开始演练</button>
     <button class="ctrl-btn" id="btn-speed" onclick="toggleSpeed()">速度 ×1</button>
     <button class="ctrl-btn" id="btn-reset" onclick="resetDrill()">重置</button>
     <div class="view-btn" onclick="setView('overview')">全景总览</div>
@@ -168,6 +247,59 @@ canvas { display: block; }
 <div id="alarm-banner">火警！T301-2浮盘密封圈着火</div>
 <div id="success-banner">✓ 火势已扑灭 · 无复燃 · 演练圆满成功</div>
 <div id="tooltip"></div>
+
+<!-- 模式选择 -->
+<div id="mode-select">
+    <h2>301罐区 T301-2火灾应急演练</h2>
+    <div class="sub">请选择体验方式</div>
+    <div class="mode-cards">
+        <div class="mode-card" onclick="chooseDemo()">
+            <div class="ic">🎬</div>
+            <div class="t">观看演示</div>
+            <div class="d">自动播放完整演练流程<br>适合整体了解与培训讲解</div>
+        </div>
+        <div class="mode-card" onclick="showRoleSelect()">
+            <div class="ic">🎮</div>
+            <div class="t">角色实操</div>
+            <div class="d">选择岗位亲自操作<br>按规程完成应急处置并评分</div>
+        </div>
+    </div>
+    <div id="role-select">
+        <div class="rt">选择你要扮演的岗位</div>
+        <div class="role-grid">
+            <div class="role-card" onclick="chooseRole('discover')"><div class="rn">发现人·油槽工甲</div><div class="rr">关切断阀·汇报·报警·警戒</div></div>
+            <div class="role-card disabled"><div class="rn">班长</div><div class="rr">敬请期待</div></div>
+            <div class="role-card disabled"><div class="rn">计量员</div><div class="rr">敬请期待</div></div>
+            <div class="role-card disabled"><div class="rn">油槽工乙</div><div class="rr">敬请期待</div></div>
+        </div>
+    </div>
+    <div id="mode-cancel" onclick="closeModeSelect()">返回</div>
+</div>
+
+<!-- 游戏任务面板 -->
+<div id="game-panel">
+    <div class="gp-role" id="gp-role">发现人 · 油槽工甲</div>
+    <div class="gp-time">用时 <span id="gp-time">00:00</span> · 误操作 <span id="gp-wrongn">0</span> 次</div>
+    <div class="gp-instr" id="gp-instr">准备开始...</div>
+    <div id="gp-tasks"></div>
+    <button id="game-radio-btn" onclick="gameRadioReport()">📻 对讲机汇报班长</button>
+    <div id="game-wrong"></div>
+</div>
+
+<!-- 评分弹窗 -->
+<div id="game-score">
+    <div class="score-box">
+        <h3>应急处置完成</h3>
+        <div class="grade" id="sc-grade">A</div>
+        <div id="sc-comment" style="font-size:12px;opacity:0.8;"></div>
+        <div class="score-rows">
+            <div class="sr"><span>完成用时</span><span id="sc-time">--</span></div>
+            <div class="sr"><span>误操作次数</span><span id="sc-wrong">--</span></div>
+            <div class="sr"><span>操作顺序</span><span id="sc-order">--</span></div>
+        </div>
+        <button onclick="closeScore()">继续观看后续处置</button>
+    </div>
+</div>
 
 <script src="./three.min.js"></script>
 <script src="./OrbitControls.js"></script>
@@ -215,6 +347,27 @@ let fireTruck = null, truckMoving = false, truckSpray = false, truckStream = nul
 let rainValve = null, accidentValve = null, initRainValve = null; // 三级防控三阀
 let containValves = []; // [雨水外排阀, 事故水阀, 初期雨水阀]
 let rainTask = ''; // 关阀任务状态
+// ---------- 角色实操(游戏)模式状态 ----------
+let gameMode = false;          // 是否角色实操模式
+let gameActive = false;        // 玩家任务是否进行中
+let gameTaskIndex = 0;         // 当前任务序号
+let gameTaskState = 'needClick'; // needClick=等待点击 / walking=走向目标 / done
+let gameWrongClicks = 0;       // 误操作次数
+let gameStartClock = 0;        // 玩家开始时的演练时钟
+let gameDoneClock = 0;         // 玩家完成全部任务时的时钟
+let gameScoreShown = false;    // 评分是否已弹出
+let hlMesh = null, hlLabel = null; // 当前高亮设备及其提示标签
+// 发现人(油槽工甲)任务清单: 关切断阀→对讲机汇报→手动报警→梯口警戒
+const GAME_TASKS = [
+    { id: 'esd',   label: '① 关闭紧急切断阀(泵房外侧)', target: 'esd',
+      instr: '发现T301-2密封圈着火! 一分钟应急, 第一时间切断物料——点击泵房外侧高亮的【紧急切断阀】按钮。' },
+    { id: 'radio', label: '② 对讲机汇报班长', target: 'radio',
+      instr: '紧急切断阀已关闭。立即用对讲机向班长汇报火情(点击下方按钮)。' },
+    { id: 'alarm', label: '③ 按下手动报警按钮(南防火墙外)', target: 'alarm',
+      instr: '班长指令: 立即报警! 点击南防火墙外高亮的【手动报警按钮】。' },
+    { id: 'guard', label: '④ 到泵房梯口警戒·接引消防车', target: 'guard',
+      instr: '已报警, 消防车出动。前往泵房梯口警戒, 接引消防车, 无关人员禁止入内。' }
+];
 // 风向设定: 西风(自西向东吹, +x方向), 上风口在西侧 → 应急人员从西侧集结点(上风口)进入罐区
 const WIND = { x: 1, z: 0, name: '西风', speed: '3.2m/s', upwind: '西侧' };
 let windsock = null; // T301-4罐顶风向袋
@@ -1708,6 +1861,13 @@ function startDrill() {
 }
 
 function resetDrill() {
+    // 角色实操模式状态清理
+    gameMode = false; gameActive = false; gameTaskIndex = 0; gameScoreShown = false;
+    if (typeof clearHighlight === 'function') clearHighlight();
+    document.getElementById('game-panel').classList.remove('show');
+    document.getElementById('game-score').classList.remove('show');
+    document.getElementById('game-radio-btn').classList.remove('show');
+    document.getElementById('phase-bar').style.display = '';
     drillRunning = false;
     currentPhase = -1;
     phaseTimer = 0;
@@ -1805,27 +1965,49 @@ function updateDrill(dt) {
         if (phaseTimer >= at) { phaseEvents[key] = true; fn(); }
     }
 
+    // 角色实操模式: 玩家任务系统驱动(警戒任务会延续到AI阶段, 故以 gameActive 为准)
+    if (gameMode && gameActive) updateGameTasks(dt);
+
     switch (phase) {
         case 0: // 巡检发现火情
+            if (gameMode) break; // 角色实操: 玩家驱动
             once('0_2', () => {
                 targetFireIntensity = 0.3;
                 addLog('油槽工甲巡检至T301-2罐前, 发现浮盘密封圈处有明火!', 'warn');
             });
             once('0_4', () => {
                 targetFireIntensity = 0.6;
-                personnel[2].radioPose = true;
-                addLog('油槽工甲: "报告班长! T301-2密封圈着火, 火焰沿密封圈蔓延, 约2m高!"', 'warn');
+                addLog('油槽工甲: "密封圈着火! 一分钟应急, 第一时间切断物料!" 奔向泵房关紧急切断阀', 'warn');
+                // 发现人: 罐前→东走廊→泵房外侧紧急切断阀(先关阀, 一分钟应急核心)
+                setPersonPath(personnel[2], [[112, 10], [112, -16], [141, -16]],
+                    new THREE.Vector3(PUMP.x + PUMP.w / 2 + S(1.2), 0, S(-16.6)));
             });
             break;
-        case 1: // 手动报警·关紧急切断阀
-            once('1_0', () => {
-                personnel[2].radioPose = false;
-                addLog('班长: "收到! 立即去按手动报警, 再到泵房关掉紧急切断阀!"', 'warn');
-                // 油槽工甲: 罐前→绕T301-2东侧→东墙z=50梯口出墙→南防火墙外手动报警按钮(111,81.5)
-                setPersonPath(personnel[2], [[111, 10], [112, 50], [124, 50], [124, 81], [111, 81]],
-                    new THREE.Vector3(S(111), 0, S(81.5)));
+        case 1: // 关紧急切断阀·汇报班长·手动报警
+            if (gameMode) break; // 角色实操: 玩家驱动
+            once('1_5', () => {
+                // 第一时间按下紧急切断阀关闭按钮(泵房P301-9)——切断物料
+                if (window.esdButton) window.esdButton.material.color.setHex(0xffcc00);
+                valves.forEach(v => { v.targetAngle = Math.PI * 6; });
+                addLog('油槽工甲按下紧急切断阀关闭按钮!', 'warn');
+            });
+            once('1_6', () => {
+                valves.forEach(v => { v.closed = true; });
+                targetFireIntensity = 0.85;
+                addLog('T301-2紧急切断阀已关闭! 进出料管线切断, 物料已切断!', 'ok');
+            });
+            once('1_8', () => {
+                personnel[2].radioPose = true;
+                addLog('油槽工甲对讲机汇报: "报告班长! T301-2密封圈着火, 我已第一时间关闭紧急切断阀!"', 'warn');
             });
             once('1_11', () => {
+                personnel[2].radioPose = false;
+                addLog('班长: "收到! 立即去按手动报警, 然后到泵房梯口警戒, 接引消防车!"', 'warn');
+                // 发现人: 泵房外侧→南消防通道→南防火墙外手动报警按钮(111,81.5)
+                setPersonPath(personnel[2], [[145, -16], [145, 84], [124, 84], [111, 81]],
+                    new THREE.Vector3(S(111), 0, S(81.5)));
+            });
+            once('1_24', () => {
                 // 按下手动报警按钮
                 document.getElementById('alarm-overlay').classList.add('active');
                 document.getElementById('alarm-banner').style.display = 'block';
@@ -1833,37 +2015,25 @@ function updateDrill(dt) {
                 if (window.alarmButton) window.alarmButton.material.color.setHex(0xff0000);
                 addLog('油槽工甲按下手动报警按钮! 声光报警器启动!', 'warn');
             });
-            once('1_13', () => {
-                // 油槽工甲: 南墙外报警按钮→沿南消防通道东行→东消防通道北上→泵房外侧东立面紧急切断阀按钮
-                setPersonPath(personnel[2], [[124, 84], [145, 84], [145, -20]],
-                    new THREE.Vector3(PUMP.x + PUMP.w / 2 + S(1.2), 0, S(-16.6)));
-                addLog('油槽工甲奔向泵房外侧, 准备关闭紧急切断阀!');
-            });
-            once('1_30', () => {
-                // 按下紧急切断阀关闭按钮(泵房P301-9)
-                if (window.esdButton) window.esdButton.material.color.setHex(0xffcc00);
-                valves.forEach(v => { v.targetAngle = Math.PI * 6; });
-                addLog('油槽工甲按下紧急切断阀关闭按钮!', 'warn');
-            });
-            once('1_31', () => {
-                valves.forEach(v => { v.closed = true; });
-                targetFireIntensity = 0.85;
-                addLog('T301-2紧急切断阀已关闭! 进出料管线切断!', 'ok');
+            once('1_25', () => {
+                truckMoving = true; // 消防车接到手动报警立即出动
+                addLog('消防队接到手动报警, 消防车立即出动, 驶向罐区东消防通道!');
+                // 发现人: 报警按钮→泵房梯口警戒接引(不再进罐区)
+                setPersonPath(personnel[2], [[124, 84], [124, 50], [131, -32]],
+                    new THREE.Vector3(S(128), 0, S(-32)));
             });
             break;
         case 2: // 汇报调度·启动喷淋
             once('2_0', () => {
                 personnel[0].radioPose = true;
-                addLog('班长: "报告调度! T301-2浮盘密封圈着火, 已按手动报警并关闭紧急切断阀, 请求支援!"', 'warn');
+                addLog('班长向车间领导及调度汇报: "T301-2密封圈着火, 已第一时间关闭紧急切断阀并按手动报警, 请求支援!"', 'warn');
             });
             once('2_3', () => {
                 addLog('调度: 收到! 立即启动罐区火灾应急预案II级响应, 远程开启喷淋冷却!', 'warn');
             });
             once('2_4', () => {
                 waterRingOn = true;
-                truckMoving = true; // 消防车从南侧驶入
                 addLog('调度: 已远程开启T301-2及相邻罐喷淋盘管, 罐壁冷却水已投用!', 'ok');
-                addLog('调度: 消防车已出动, 预计1分钟内到达罐区东消防通道!');
             });
             once('2_5', () => {
                 personnel[0].radioPose = false;
@@ -1874,9 +2044,7 @@ function updateDrill(dt) {
                 setPersonPath(personnel[1], [[-112, 32], [-112, -62], [90, -62], [90, -74]],
                     new THREE.Vector3(S(90), 0, S(-74)));
                 rainTask = 'going';
-                // 油槽工甲(发现人): 已报警并关紧急切断阀, 不再进罐区; 留东消防通道泵房梯口警戒, 对进场人员做安全简介
-                setPersonPath(personnel[2], [[145, -20], [131, -32]],
-                    new THREE.Vector3(S(128), 0, S(-32)));
+                // 油槽工甲(发现人): 已在阶段1前往泵房梯口警戒接引消防车, 此处不再重复派路
                 // 油槽工乙: 西侧走廊→北侧→泵房
                 setPersonPath(personnel[3], [[-112, -32], [-112, -62], [112, -62], [112, -32]],
                     new THREE.Vector3(PUMP.x - PUMP.w / 2 - S(3), 0, PUMP.z));
@@ -1982,8 +2150,8 @@ function updateDrill(dt) {
             break;
     }
 
-    // 阶段切换
-    if (phase < PHASES.length - 1 && phaseTimer >= PHASES[phase].duration) {
+    // 阶段切换 (角色实操模式下阶段0-1由玩家任务驱动, 不自动计时切换)
+    if (phase < PHASES.length - 1 && phaseTimer >= PHASES[phase].duration && (!gameMode || phase >= 2)) {
         currentPhase++;
         phaseTimer = 0;
         updatePhaseUI();
@@ -2025,6 +2193,246 @@ function updateDrill(dt) {
     }
 
     updateStatus();
+}
+
+// ---------- 角色实操(游戏)模式 ----------
+function formatSec(sec) {
+    const m = Math.floor(sec / 60), s = Math.floor(sec % 60);
+    return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+}
+function openModeSelect() {
+    if (drillRunning || gameMode) resetDrill();
+    document.getElementById('role-select').classList.remove('show');
+    document.getElementById('mode-select').classList.add('show');
+}
+function closeModeSelect() {
+    document.getElementById('mode-select').classList.remove('show');
+}
+function chooseDemo() {
+    closeModeSelect();
+    gameMode = false;
+    startDrill();
+}
+function showRoleSelect() {
+    document.getElementById('role-select').classList.add('show');
+}
+function chooseRole(role) {
+    if (role !== 'discover') return; // 目前仅发现人可玩
+    closeModeSelect();
+    startGame(role);
+}
+function setGameCamera(px, py, pz, tx, ty, tz) {
+    camera.position.set(px, py, pz);
+    controls.target.set(tx, ty, tz);
+    controls.update();
+}
+function clearHighlight() {
+    if (hlMesh) { hlMesh.material.emissive.setHex(0x000000); hlMesh = null; }
+    if (hlLabel) hlLabel.visible = false;
+}
+function setHighlight(mesh) {
+    clearHighlight();
+    hlMesh = mesh;
+    if (!hlLabel) {
+        hlLabel = makeLabel('👆 点击操作', '#ffeb3b');
+        scene.add(hlLabel);
+    }
+    hlLabel.scale.set(S(9), S(4.5), 1);
+    hlLabel.position.set(mesh.position.x, mesh.position.y + S(4.2), mesh.position.z);
+    hlLabel.visible = true;
+}
+function walkDiscoverer(task) {
+    const p = personnel[2];
+    if (task.id === 'esd') {
+        setPersonPath(p, [[112, 10], [112, -16], [141, -16]],
+            new THREE.Vector3(PUMP.x + PUMP.w / 2 + S(1.2), 0, S(-16.6)));
+    } else if (task.id === 'alarm') {
+        setPersonPath(p, [[145, -16], [145, 84], [124, 84], [111, 81]],
+            new THREE.Vector3(S(111), 0, S(81.5)));
+    } else if (task.id === 'guard') {
+        setPersonPath(p, [[124, 84], [124, 50], [131, -32]],
+            new THREE.Vector3(S(128), 0, S(-32)));
+    }
+}
+function updateGameHUD() {
+    const box = document.getElementById('gp-tasks');
+    box.innerHTML = '';
+    GAME_TASKS.forEach((t, i) => {
+        const cls = i < gameTaskIndex ? 'done' : (i === gameTaskIndex && gameActive) ? 'active' : '';
+        const mark = i < gameTaskIndex ? '✓' : (i + 1);
+        const div = document.createElement('div');
+        div.className = 'gtask ' + cls;
+        div.innerHTML = '<span class="gdot">' + mark + '</span>' + t.label;
+        box.appendChild(div);
+    });
+    document.getElementById('gp-wrongn').textContent = gameWrongClicks;
+}
+function setGameTask(idx) {
+    gameTaskIndex = idx;
+    const task = GAME_TASKS[idx];
+    gameTaskState = (task.target === 'guard') ? 'walking' : 'needClick';
+    document.getElementById('game-radio-btn').classList.toggle('show', task.target === 'radio');
+    document.getElementById('gp-instr').textContent = task.instr;
+    updateGameHUD();
+    if (task.target === 'esd') {
+        setHighlight(window.esdButton);
+        setGameCamera(S(168), S(30), S(42), S(138), S(6), S(-16));
+    } else if (task.target === 'alarm') {
+        setHighlight(window.alarmButton);
+        setGameCamera(S(111), S(34), S(122), S(111), S(7), S(81));
+    } else if (task.target === 'guard') {
+        clearHighlight();
+        walkDiscoverer(task);
+        setGameCamera(S(168), S(34), S(30), S(128), S(5), S(-30));
+    } else { // radio: 原地操作, 镜头给到发现人
+        clearHighlight();
+        const pp = personnel[2].group.position;
+        setGameCamera(pp.x + S(14), S(16), pp.z + S(16), pp.x, S(5), pp.z);
+    }
+}
+function advanceGameTask() {
+    const next = gameTaskIndex + 1;
+    if (next < GAME_TASKS.length) setGameTask(next);
+}
+function triggerGameAI() {
+    currentPhase = 2; phaseTimer = 0;
+    updatePhaseUI();
+    addLog('【阶段3】' + PHASES[2].name, 'warn');
+}
+function completeGameAction() {
+    const task = GAME_TASKS[gameTaskIndex];
+    if (task.id === 'esd') {
+        if (window.esdButton) window.esdButton.material.color.setHex(0xffcc00);
+        valves.forEach(v => { v.targetAngle = Math.PI * 6; v.closed = true; });
+        targetFireIntensity = 0.85;
+        addLog('油槽工甲按下紧急切断阀! T301-2进出料管线切断, 物料已切断!', 'ok');
+        advanceGameTask();
+    } else if (task.id === 'alarm') {
+        document.getElementById('alarm-overlay').classList.add('active');
+        document.getElementById('alarm-banner').style.display = 'block';
+        alarmLights.forEach(l => l.material.color.setHex(0xff2200));
+        if (window.alarmButton) window.alarmButton.material.color.setHex(0xff0000);
+        truckMoving = true;
+        addLog('油槽工甲按下手动报警按钮! 声光报警启动, 消防车接警出动!', 'warn');
+        advanceGameTask(); // → 梯口警戒
+        triggerGameAI();  // 班长/调度/喷淋/进罐区 协同处置 AI 演出
+    } else if (task.id === 'guard') {
+        addLog('油槽工甲到达泵房梯口警戒: 接引消防车, 无关人员禁止进入罐区!', 'ok');
+        gameActive = false;
+        gameDoneClock = Date.now();
+        document.getElementById('game-radio-btn').classList.remove('show');
+        document.getElementById('gp-instr').textContent = '你的应急处置任务已完成! 正在观看后续班组协同处置...';
+        updateGameHUD();
+        showGameScore();
+    }
+}
+function updateGameTasks(dt) {
+    if (!gameActive) return;
+    const p = personnel[2];
+    if (gameTaskState === 'walking' && p.arrived) { completeGameAction(); return; }
+    if (hlMesh && gameTaskState === 'needClick') {
+        const pu = (Math.sin(Date.now() * 0.006) + 1) / 2;
+        hlMesh.material.emissive.setHex(0xff8800);
+        hlMesh.material.emissiveIntensity = 0.5 + pu * 1.0;
+        if (hlLabel) { const s = 1 + pu * 0.12; hlLabel.scale.set(S(9) * s, S(4.5) * s, 1); }
+    }
+    document.getElementById('gp-time').textContent = formatSec((Date.now() - gameStartClock) / 1000);
+}
+function onGameClick(e) {
+    if (!gameMode || !gameActive) return;
+    const task = GAME_TASKS[gameTaskIndex];
+    if (!task || gameTaskState !== 'needClick' || task.target === 'radio') return;
+    mouse.x = (e.clientX / innerWidth) * 2 - 1;
+    mouse.y = -(e.clientY / innerHeight) * 2 + 1;
+    raycaster.setFromCamera(mouse, camera);
+    const hits = raycaster.intersectObjects(pickables, false);
+    const expected = task.target === 'esd' ? window.esdButton : window.alarmButton;
+    if (hits.length > 0 && hits[0].object === expected) {
+        clearHighlight();
+        gameTaskState = 'walking';
+        walkDiscoverer(task);
+        document.getElementById('game-wrong').textContent = '';
+        addLog('油槽工甲奔向' + (task.target === 'esd' ? '紧急切断阀' : '手动报警按钮') + '...');
+    } else {
+        gameWrongClicks++;
+        document.getElementById('gp-wrongn').textContent = gameWrongClicks;
+        document.getElementById('game-wrong').textContent =
+            '✗ 误操作! 应点击高亮的' + (task.target === 'esd' ? '【紧急切断阀】' : '【手动报警按钮】') + ' (' + gameWrongClicks + '次)';
+    }
+}
+function gameRadioReport() {
+    if (!gameMode || !gameActive) return;
+    const task = GAME_TASKS[gameTaskIndex];
+    if (!task || task.target !== 'radio' || gameTaskState !== 'needClick') return;
+    personnel[2].radioPose = true;
+    addLog('油槽工甲对讲机汇报: "报告班长! T301-2密封圈着火, 我已第一时间关闭紧急切断阀!"', 'warn');
+    setTimeout(() => { if (personnel[2]) personnel[2].radioPose = false; }, 2500);
+    addLog('班长: "收到! 立即去按手动报警, 然后到泵房梯口警戒, 接引消防车!"', 'warn');
+    advanceGameTask();
+}
+function showGameScore() {
+    if (gameScoreShown) return;
+    gameScoreShown = true;
+    const sec = (gameDoneClock - gameStartClock) / 1000;
+    let grade = 'A', cls = 'a', comment = '处置规范, 反应迅速';
+    if (gameWrongClicks === 0 && sec <= 60) { grade = 'S'; cls = 's'; comment = '教科书式应急处置!'; }
+    else if (gameWrongClicks <= 1 && sec <= 120) { grade = 'A'; cls = 'a'; comment = '处置规范, 反应迅速'; }
+    else if (gameWrongClicks <= 3 && sec <= 240) { grade = 'B'; cls = 'b'; comment = '流程正确, 熟练度待提升'; }
+    else { grade = 'C'; cls = 'c'; comment = '需加强规程熟悉与训练'; }
+    const g = document.getElementById('sc-grade');
+    g.textContent = grade; g.className = 'grade ' + cls;
+    document.getElementById('sc-comment').textContent = comment;
+    document.getElementById('sc-time').textContent = formatSec(sec);
+    document.getElementById('sc-wrong').textContent = gameWrongClicks + ' 次';
+    document.getElementById('sc-order').textContent = '正确 ✓';
+    document.getElementById('game-score').classList.add('show');
+}
+function closeScore() {
+    document.getElementById('game-score').classList.remove('show');
+}
+function startGame(role) {
+    resetDrill();
+    gameMode = true;
+    gameActive = true;
+    gameTaskIndex = 0;
+    gameTaskState = 'needClick';
+    gameWrongClicks = 0;
+    gameScoreShown = false;
+    gameStartClock = Date.now();
+    drillRunning = true;
+    currentPhase = 0; phaseTimer = 0; drillClock = 0;
+    phaseEvents = {};
+    followPerson = -1; cameraMode = 'overview';
+    // 发现人就位 T301-2 罐前
+    const t2pos = tankPos(TANKS[1]);
+    const p2 = personnel[2];
+    p2.group.position.set(t2pos.x + S(5), 0, t2pos.z - S(22));
+    p2.pos.set(t2pos.x + S(5), 0, t2pos.z - S(22));
+    p2.target = null; p2.walking = false; p2.arrived = false; p2.path = null; p2.pathIndex = 0;
+    // 其他人员在集合点
+    const muster = new THREE.Vector3(S(-135), 0, S(20));
+    [0, 1, 3].forEach(i => {
+        const sp = new THREE.Vector3(muster.x + i * S(4), 0, muster.z + i * S(3));
+        personnel[i].group.position.copy(sp);
+        personnel[i].pos.copy(sp);
+    });
+    targetFireIntensity = 0.5; // 起火
+    // UI 切换
+    document.getElementById('phase-bar').style.display = 'none';
+    document.getElementById('game-panel').classList.add('show');
+    document.getElementById('game-wrong').textContent = '';
+    document.getElementById('btn-start').disabled = true;
+    addLog('【角色实操】你扮演发现人·油槽工甲, 夜间巡检至T301-2罐前', 'warn');
+    // 绑定点击(仅一次)
+    if (!window.__gameClickBound) {
+        let pdX = 0, pdY = 0;
+        renderer.domElement.addEventListener('pointerdown', e => { pdX = e.clientX; pdY = e.clientY; });
+        renderer.domElement.addEventListener('pointerup', e => {
+            if (Math.hypot(e.clientX - pdX, e.clientY - pdY) < 7) onGameClick(e);
+        });
+        window.__gameClickBound = true;
+    }
+    setGameTask(0);
 }
 
 // ---------- 人员移动 ----------
