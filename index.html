@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>301罐区T301-2储罐火灾应急演练 - 3D模拟</title>
+<title>301罐区T301-3储罐火灾应急演练 - 3D模拟</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { overflow: hidden; font-family: "Microsoft YaHei", sans-serif; background: #0d1b2a; }
@@ -203,8 +203,8 @@ canvas { display: block; }
 <div id="loading"><div class="spinner"></div>正在构建301罐区应急演练场景...</div>
 <div id="canvas-container"></div>
 <div id="header">
-    <h1>301原料油罐区 T301-2储罐火灾应急演练 · 3D模拟</h1>
-    <p>中石油燃料油温州分公司 · 生产一车间 · T301-2外浮顶罐30000m³浮盘密封圈火灾 · 参演人员4人</p>
+    <h1>301原料油罐区 T301-3储罐火灾应急演练 · 3D模拟</h1>
+    <p>中石油燃料油温州分公司 · 生产一车间 · T301-3外浮顶罐30000m³浮盘密封圈火灾 · 参演人员4人</p>
 </div>
 <div id="ctrl-panel">
     <button class="ctrl-btn" id="btn-start" onclick="openModeSelect()">开始演练</button>
@@ -234,7 +234,7 @@ canvas { display: block; }
 <div id="event-log"><h3>演练事件记录</h3><div id="log-list"></div></div>
 <div id="status-panel">
     <h3>实时状态</h3>
-    <div class="status-row"><span>T301-2浮盘温度</span><span class="val" id="st-temp">32°C</span></div>
+    <div class="status-row"><span>T301-3浮盘温度</span><span class="val" id="st-temp">32°C</span></div>
     <div class="status-row"><span>紧急切断阀</span><span class="val" id="st-valve">开启</span></div>
     <div class="status-row"><span>输油泵状态</span><span class="val" id="st-pump">运行中</span></div>
     <div class="status-row"><span>冷却水喷淋</span><span class="val" id="st-spray">未启动</span></div>
@@ -244,13 +244,13 @@ canvas { display: block; }
     <div class="status-row"><span>演练用时</span><span class="val" id="st-time">--:--</span></div>
 </div>
 <div id="alarm-overlay"></div>
-<div id="alarm-banner">火警！T301-2浮盘密封圈着火</div>
+<div id="alarm-banner">火警！T301-3浮盘密封圈着火</div>
 <div id="success-banner">✓ 火势已扑灭 · 无复燃 · 演练圆满成功</div>
 <div id="tooltip"></div>
 
 <!-- 模式选择 -->
 <div id="mode-select">
-    <h2>301罐区 T301-2火灾应急演练</h2>
+    <h2>301罐区 T301-3火灾应急演练</h2>
     <div class="sub">请选择体验方式</div>
     <div class="mode-cards">
         <div class="mode-card" onclick="chooseDemo()">
@@ -305,7 +305,7 @@ canvas { display: block; }
 <script src="./OrbitControls.js"></script>
 <script>
 /* ============================================================================
- * 301罐区T301-2火灾应急演练 3D模拟
+ * 301罐区T301-3火灾应急演练 3D模拟
  * 罐区参数: T301-1~5 外浮顶罐 30000m³ D=40m H=17.5m
  *           T301-6 内浮顶罐 10000m³ D=26m H=14m
  * 布置: 2排×3列, 罐中心距64m(1.6D), DS=0.15
@@ -317,12 +317,12 @@ const S = m => m * DS; // 米→场景单位
 
 // ---------- 罐区布局 ----------
 const TANK_D = 40, TANK_H = 17.5, GAP = 56; // 中心距
-// 北排(3罐, 均匀分布): T301-1(x=-84) / T301-6(x=0) / T301-3(x=84); 南排(4罐): T305-4 / T301-5 / T301-4 / T301-2(着火)
+// 北排(3罐, 均匀分布): T301-1(x=-84) / T301-6(x=0) / T301-3(x=84,着火); 南排(4罐): T305-4 / T301-5 / T301-4 / T301-2
 // T305-4 与 T301-6 同规格(D26/H14), 位于南排最西头, 与北排 T301-1 相对、紧邻 T301-5; T305-4 管线独立(不接301总管)
 const TANKS = [
     { id: 'T301-1', mx: -84, mz: -32, D: 40, H: 17.5, cap: 30000, type: 'ext_float' },
-    { id: 'T301-2', mx: 84, mz: 32, D: 40, H: 17.5, cap: 30000, type: 'ext_float', fire: true },
-    { id: 'T301-3', mx: 84, mz: -32, D: 26, H: 14, cap: 30000, type: 'ext_float' },
+    { id: 'T301-2', mx: 84, mz: 32, D: 40, H: 17.5, cap: 30000, type: 'ext_float' },
+    { id: 'T301-3', mx: 84, mz: -32, D: 26, H: 14, cap: 30000, type: 'ext_float', fire: true },
     { id: 'T301-4', mx: 28, mz: 32, D: 26, H: 14, cap: 30000, type: 'ext_float' },
     { id: 'T301-5', mx: -28, mz: 32, D: 26, H: 14, cap: 30000, type: 'ext_float' },
     { id: 'T301-6', mx: 0, mz: -32, D: 26, H: 14, cap: 10000, type: 'int_float' },
@@ -360,11 +360,11 @@ let hlMesh = null, hlLabel = null; // 当前高亮设备及其提示标签
 // 发现人(油槽工甲)任务清单: 关切断阀→对讲机汇报→手动报警→梯口警戒
 const GAME_TASKS = [
     { id: 'esd',   label: '① 关闭紧急切断阀(泵房外侧)', target: 'esd',
-      instr: '发现T301-2密封圈着火! 一分钟应急, 第一时间切断物料——点击泵房外侧高亮的【紧急切断阀】按钮。' },
+      instr: '发现T301-3密封圈着火! 一分钟应急, 第一时间切断物料——点击泵房外侧高亮的【紧急切断阀】按钮。' },
     { id: 'radio', label: '② 对讲机汇报班长', target: 'radio',
       instr: '紧急切断阀已关闭。立即用对讲机向班长汇报火情(点击下方按钮)。' },
-    { id: 'alarm', label: '③ 按下手动报警按钮(南防火墙外)', target: 'alarm',
-      instr: '班长指令: 立即报警! 点击南防火墙外高亮的【手动报警按钮】。' },
+    { id: 'alarm', label: '③ 按下手动报警按钮(泵房旁绿化带边)', target: 'alarm',
+      instr: '班长指令: 立即报警! 点击泵房旁绿化带边高亮的【手动报警按钮】(距紧急切断阀约5米)。' },
     { id: 'guard', label: '④ 到泵房梯口警戒·接引消防车', target: 'guard',
       instr: '已报警, 消防车出动。前往泵房梯口警戒, 接引消防车, 无关人员禁止入内。' }
 ];
@@ -1026,25 +1026,26 @@ function buildPipelines() {
     fwLabel.scale.set(S(16), S(6), 1);
     scene.add(fwLabel);
 
-    // 泡沫管线(红色: 消防喷淋线东段→沿T301-2东罐壁垂直上升→罐顶泡沫产生器)
-    const t2pos = tankPos(TANKS[1]);
-    const t2r = S(TANKS[1].D / 2);
-    const foamGenX = t2pos.x + t2r, foamGenZ = t2pos.z; // T301-2东罐壁
+    // 泡沫管线(红色: 消防喷淋线东段→沿T301-3东罐壁垂直上升→罐顶泡沫产生器)
+    const tFire = TANKS.find(tk => tk.id === 'T301-3');
+    const t2pos = tankPos(tFire);
+    const t2r = S(tFire.D / 2);
+    const foamGenX = t2pos.x + t2r, foamGenZ = t2pos.z; // T301-3东罐壁
     // 泡沫进料(水平, 自消防水环管东段接出)
     pipe([fw / 2, S(1.5), foamGenZ], [foamGenX, S(1.5), foamGenZ], S(0.35), foamPipeMat);
     // 泡沫立管(垂直, 沿东罐壁上升至罐顶)
-    pipe([foamGenX, S(1.5), foamGenZ], [foamGenX, S(TANK_H - 1), foamGenZ], S(0.35), foamPipeMat);
+    pipe([foamGenX, S(1.5), foamGenZ], [foamGenX, S(tFire.H - 1), foamGenZ], S(0.35), foamPipeMat);
     // 泡沫产生器
     const foamGen = new THREE.Mesh(
         new THREE.CylinderGeometry(S(1.2), S(1.5), S(3), 10),
         new THREE.MeshStandardMaterial({ color: 0xff5722, roughness: 0.4, metalness: 0.5 })
     );
-    foamGen.position.set(foamGenX, S(TANK_H - 1), foamGenZ);
-    foamGen.userData.label = '泡沫产生器 (T301-2)';
+    foamGen.position.set(foamGenX, S(tFire.H - 1), foamGenZ);
+    foamGen.userData.label = '泡沫产生器 (T301-3)';
     scene.add(foamGen);
     pickables.push(foamGen);
     const foamLabel = makeLabel('泡沫管线 DN150', '#ef5350');
-    foamLabel.position.set(S(110), S(5), foamGenZ + S(7));
+    foamLabel.position.set(S(106), S(5), foamGenZ + S(7));
     foamLabel.scale.set(S(15), S(6), 1);
     scene.add(foamLabel);
 
@@ -1439,7 +1440,7 @@ function createParticleSystem(count, genFn, updateFn) {
 }
 
 function buildFireSystems() {
-    const t2 = TANKS[1], pos = tankPos(t2);
+    const t2 = TANKS.find(tk => tk.id === 'T301-3'), pos = tankPos(t2);
     const r = S(t2.D / 2), topY = S(t2.H - 1);
 
     // === 火焰粒子 ===
@@ -1525,7 +1526,7 @@ function buildFireSystems() {
     scene.add(fireGlow);
 
     // === 喷淋冷却系统(盘管在罐上部罐壁, 向罐壁喷水降温) ===
-    ['T301-2', 'T301-3', 'T301-4'].forEach(id => {
+    ['T301-3', 'T301-2', 'T301-6'].forEach(id => {
         const t = TANKS.find(tk => tk.id === id), tp = tankPos(t);
         const tr = S(t.D / 2), th = S(t.H);
         const ringY = th * 0.85; // 盘管在罐壁上部(约15m处)
@@ -1589,14 +1590,14 @@ function buildFireSystems() {
         scene.add(riser);
     });
 
-    // === 泡沫粒子(从泡沫产生器喷向T301-2浮盘) ===
+    // === 泡沫粒子(从泡沫产生器喷向T301-3浮盘) ===
     foamParticles = createParticleSystem(350, () => ({
         x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0, life: 0, maxLife: 1, active: false
     }), (p, dt, i) => {
         if (!foamOn) { p.active = false; return; }
         if (!p.active) {
             p.x = pos.x + r;
-            p.y = S(TANK_H - 0.5);
+            p.y = topY + S(0.5);
             p.z = pos.z;
             // 喷向罐内浮盘
             const targetAng = Math.random() * Math.PI * 2;
@@ -1658,8 +1659,8 @@ function buildAlarmDevices() {
         scene.add(light);
         alarmLights.push(light);
     });
-    // 手动报警按钮(南防火墙外侧, 2号罐南侧, 贴南消防通道)
-    const abX = S(111), abZ = S(81.5);
+    // 手动报警按钮(泵房旁绿化带边, 距紧急切断阀按钮5米)
+    const abX = PUMP.x + PUMP.w / 2 + S(1.2), abZ = S(-11.6); // ESD在z=-16.6, 向南5米即绿化带边
     const abPole = new THREE.Mesh(
         new THREE.CylinderGeometry(S(0.2), S(0.25), S(3.5), 8),
         new THREE.MeshStandardMaterial({ color: 0x666666, roughness: 0.5, metalness: 0.6 })
@@ -1671,7 +1672,7 @@ function buildAlarmDevices() {
         new THREE.MeshStandardMaterial({ color: 0xcc0000, roughness: 0.4, metalness: 0.2 })
     );
     abBox.position.set(abX, S(3.8), abZ);
-    abBox.userData.label = '手动报警按钮 (南防火墙外·T301-2南侧)';
+    abBox.userData.label = '手动报警按钮 (泵房旁绿化带边·距切断阀5米)';
     scene.add(abBox);
     pickables.push(abBox);
     window.alarmButton = abBox;
@@ -1764,8 +1765,8 @@ function buildFireTruck() {
     g.userData.label = '消防车';
     scene.add(g);
     fireTruck = g;
-    // 水炮粒子(从炮口射向T301-2罐顶)
-    const t2 = TANKS[1], t2pos = tankPos(t2);
+    // 水炮粒子(从炮口射向T301-3罐顶)
+    const t2 = TANKS.find(tk => tk.id === 'T301-3'), t2pos = tankPos(t2);
     const origin = new THREE.Vector3(S(148), S(8), S(-8)); // 炮口世界坐标(停车后)
     const target = new THREE.Vector3(t2pos.x, S(t2.H + 2), t2pos.z);
     const count = 250;
@@ -1826,7 +1827,7 @@ function updateFireTruck(dt) {
 // ---------- 演练流程控制 ----------
 const PHASES = [
     { name: '巡检发现火情', duration: 6 },
-    { name: '手动报警·关紧急切断阀', duration: 33 },
+    { name: '手动报警·关紧急切断阀', duration: 18 },
     { name: '汇报调度·启动喷淋', duration: 10 },
     { name: '停泵·关三级防控阀', duration: 16 },
     { name: '开启泡沫·灭火', duration: 16 },
@@ -1845,12 +1846,12 @@ function startDrill() {
     followPerson = -1; cameraMode = 'overview'; // 全景总览开始
     document.getElementById('btn-start').disabled = true;
     updatePhaseUI();
-    addLog('演练开始: 夜间巡检, 油槽工甲巡检至T301-2罐前', 'warn');
-    // 发现人(油槽工甲): T301-2罐前巡检
-    const t2pos = tankPos(TANKS[1]);
+    addLog('演练开始: 夜间巡检, 油槽工甲巡检至T301-3罐前', 'warn');
+    // 发现人(油槽工甲): T301-3罐前巡检
+    const t2pos = tankPos(TANKS.find(tk => tk.id === 'T301-3'));
     const p2 = personnel[2];
-    p2.group.position.set(t2pos.x + S(5), 0, t2pos.z - S(22));
-    p2.pos.set(t2pos.x + S(5), 0, t2pos.z - S(22));
+    p2.group.position.set(t2pos.x + S(5), 0, t2pos.z + S(22));
+    p2.pos.set(t2pos.x + S(5), 0, t2pos.z + S(22));
     // 其他人员在集合点
     const muster = new THREE.Vector3(S(-135), 0, S(20));
     [0, 1, 3].forEach(i => {
@@ -1927,7 +1928,7 @@ function updateStatus() {
     temp.textContent = Math.round(tempVal) + '°C';
     temp.className = 'val' + (fireIntensity > 0.01 ? ' danger' : ' safe');
 
-    const v2 = valveWheels['T301-2-OUT'];
+    const v2 = valveWheels['T301-3-OUT'];
     document.getElementById('st-valve').textContent = v2 && v2.closed ? '已关闭' : '开启';
     document.getElementById('st-valve').className = 'val' + (v2 && v2.closed ? ' safe' : '');
 
@@ -1973,13 +1974,13 @@ function updateDrill(dt) {
             if (gameMode) break; // 角色实操: 玩家驱动
             once('0_2', () => {
                 targetFireIntensity = 0.3;
-                addLog('油槽工甲巡检至T301-2罐前, 发现浮盘密封圈处有明火!', 'warn');
+                addLog('油槽工甲巡检至T301-3罐前, 发现浮盘密封圈处有明火!', 'warn');
             });
             once('0_4', () => {
                 targetFireIntensity = 0.6;
                 addLog('油槽工甲: "密封圈着火! 一分钟应急, 第一时间切断物料!" 奔向泵房关紧急切断阀', 'warn');
-                // 发现人: 罐前→东走廊→泵房外侧紧急切断阀(先关阀, 一分钟应急核心)
-                setPersonPath(personnel[2], [[112, 10], [112, -16], [141, -16]],
+                // 发现人: T301-3罐前→泵房外侧紧急切断阀(先关阀, 一分钟应急核心)
+                setPersonPath(personnel[2], [[112, -10], [112, -16], [141, -16]],
                     new THREE.Vector3(PUMP.x + PUMP.w / 2 + S(1.2), 0, S(-16.6)));
             });
             break;
@@ -1994,20 +1995,20 @@ function updateDrill(dt) {
             once('1_6', () => {
                 valves.forEach(v => { v.closed = true; });
                 targetFireIntensity = 0.85;
-                addLog('T301-2紧急切断阀已关闭! 进出料管线切断, 物料已切断!', 'ok');
+                addLog('T301-3紧急切断阀已关闭! 进出料管线切断, 物料已切断!', 'ok');
             });
             once('1_8', () => {
                 personnel[2].radioPose = true;
-                addLog('油槽工甲对讲机汇报: "报告班长! T301-2密封圈着火, 我已第一时间关闭紧急切断阀!"', 'warn');
+                addLog('油槽工甲对讲机汇报: "报告班长! T301-3密封圈着火, 我已第一时间关闭紧急切断阀!"', 'warn');
             });
             once('1_11', () => {
                 personnel[2].radioPose = false;
                 addLog('班长: "收到! 立即去按手动报警, 然后到泵房梯口警戒, 接引消防车!"', 'warn');
-                // 发现人: 泵房外侧→南消防通道→南防火墙外手动报警按钮(111,81.5)
-                setPersonPath(personnel[2], [[145, -16], [145, 84], [124, 84], [111, 81]],
-                    new THREE.Vector3(S(111), 0, S(81.5)));
+                // 发现人: 紧急切断阀→向南5米→泵房旁绿化带边手动报警按钮
+                setPersonPath(personnel[2], [[141, -11.6]],
+                    new THREE.Vector3(PUMP.x + PUMP.w / 2 + S(1.2), 0, S(-11.6)));
             });
-            once('1_24', () => {
+            once('1_13', () => {
                 // 按下手动报警按钮
                 document.getElementById('alarm-overlay').classList.add('active');
                 document.getElementById('alarm-banner').style.display = 'block';
@@ -2015,25 +2016,25 @@ function updateDrill(dt) {
                 if (window.alarmButton) window.alarmButton.material.color.setHex(0xff0000);
                 addLog('油槽工甲按下手动报警按钮! 声光报警器启动!', 'warn');
             });
-            once('1_25', () => {
+            once('1_14', () => {
                 truckMoving = true; // 消防车接到手动报警立即出动
                 addLog('消防队接到手动报警, 消防车立即出动, 驶向罐区东消防通道!');
                 // 发现人: 报警按钮→泵房梯口警戒接引(不再进罐区)
-                setPersonPath(personnel[2], [[124, 84], [124, 50], [131, -32]],
+                setPersonPath(personnel[2], [[136, -10], [129, -10], [129, -32]],
                     new THREE.Vector3(S(128), 0, S(-32)));
             });
             break;
         case 2: // 汇报调度·启动喷淋
             once('2_0', () => {
                 personnel[0].radioPose = true;
-                addLog('班长向车间领导及调度汇报: "T301-2密封圈着火, 已第一时间关闭紧急切断阀并按手动报警, 请求支援!"', 'warn');
+                addLog('班长向车间领导及调度汇报: "T301-3密封圈着火, 已第一时间关闭紧急切断阀并按手动报警, 请求支援!"', 'warn');
             });
             once('2_3', () => {
                 addLog('调度: 收到! 立即启动罐区火灾应急预案II级响应, 远程开启喷淋冷却!', 'warn');
             });
             once('2_4', () => {
                 waterRingOn = true;
-                addLog('调度: 已远程开启T301-2及相邻罐喷淋盘管, 罐壁冷却水已投用!', 'ok');
+                addLog('调度: 已远程开启T301-3及相邻罐喷淋盘管, 罐壁冷却水已投用!', 'ok');
             });
             once('2_5', () => {
                 personnel[0].radioPose = false;
@@ -2067,7 +2068,7 @@ function updateDrill(dt) {
                 addLog('油槽工乙开始停运输油泵...');
             });
             once('3_3', () => {
-                addLog('计量员: 报告班长, T301-2液位12.8m、温度42℃, 无异常升高, 浮盘状态稳定');
+                addLog('计量员: 报告班长, T301-3液位12.8m、温度42℃, 无异常升高, 浮盘状态稳定');
             });
             once('3_5', () => {
                 pumpLight.color.setHex(0xff4444);
@@ -2096,17 +2097,17 @@ function updateDrill(dt) {
         case 4: // 开启泡沫·灭火
             once('4_0', () => {
                 truckSpray = true;
-                addLog('消防车水炮启动, 向T301-2罐顶射水冷却!', 'ok');
+                addLog('消防车水炮启动, 向T301-3罐顶射水冷却!', 'ok');
                 addLog('油槽工乙在泵房配合工艺: 确认泡沫管线泵已启动');
             });
             once('4_4', () => {
                 foamOn = true;
-                addLog('消防人员开启泡沫管线阀门, 泡沫产生器向T301-2浮盘喷射泡沫!', 'ok');
+                addLog('消防人员开启泡沫管线阀门, 泡沫产生器向T301-3浮盘喷射泡沫!', 'ok');
             });
             once('4_7', () => {
                 targetFireIntensity = 0.5;
                 addLog('泡沫覆盖浮盘液面, 喷淋冷却罐壁, 火势明显减弱');
-                addLog('计量员: 报告, T301-2液位12.6m、温度39℃, 液位温度均下降, 灭火有效');
+                addLog('计量员: 报告, T301-3液位12.6m、温度39℃, 液位温度均下降, 灭火有效');
             });
             once('4_11', () => {
                 targetFireIntensity = 0.2;
@@ -2132,7 +2133,7 @@ function updateDrill(dt) {
                 addLog('火势已扑灭, 停止冷却喷淋、泡沫供给及消防车水炮, 泡沫覆盖层保持完整', 'ok');
             });
             once('5_3', () => {
-                addLog('班长: 报告调度, T301-2火灾已扑灭, 请求解除应急响应', 'ok');
+                addLog('班长: 报告调度, T301-3火灾已扑灭, 请求解除应急响应', 'ok');
                 addLog('调度: 同意解除II级应急响应, 安排人员现场监护');
             });
             once('5_6', () => {
@@ -2244,13 +2245,13 @@ function setHighlight(mesh) {
 function walkDiscoverer(task) {
     const p = personnel[2];
     if (task.id === 'esd') {
-        setPersonPath(p, [[112, 10], [112, -16], [141, -16]],
+        setPersonPath(p, [[112, -10], [112, -16], [141, -16]],
             new THREE.Vector3(PUMP.x + PUMP.w / 2 + S(1.2), 0, S(-16.6)));
     } else if (task.id === 'alarm') {
-        setPersonPath(p, [[145, -16], [145, 84], [124, 84], [111, 81]],
-            new THREE.Vector3(S(111), 0, S(81.5)));
+        setPersonPath(p, [[141, -11.6]],
+            new THREE.Vector3(PUMP.x + PUMP.w / 2 + S(1.2), 0, S(-11.6)));
     } else if (task.id === 'guard') {
-        setPersonPath(p, [[124, 84], [124, 50], [131, -32]],
+        setPersonPath(p, [[136, -10], [129, -10], [129, -32]],
             new THREE.Vector3(S(128), 0, S(-32)));
     }
 }
@@ -2279,7 +2280,7 @@ function setGameTask(idx) {
         setGameCamera(S(168), S(30), S(42), S(138), S(6), S(-16));
     } else if (task.target === 'alarm') {
         setHighlight(window.alarmButton);
-        setGameCamera(S(111), S(34), S(122), S(111), S(7), S(81));
+        setGameCamera(S(165), S(26), S(22), S(141), S(4), S(-11.6));
     } else if (task.target === 'guard') {
         clearHighlight();
         walkDiscoverer(task);
@@ -2305,7 +2306,7 @@ function completeGameAction() {
         if (window.esdButton) window.esdButton.material.color.setHex(0xffcc00);
         valves.forEach(v => { v.targetAngle = Math.PI * 6; v.closed = true; });
         targetFireIntensity = 0.85;
-        addLog('油槽工甲按下紧急切断阀! T301-2进出料管线切断, 物料已切断!', 'ok');
+        addLog('油槽工甲按下紧急切断阀! T301-3进出料管线切断, 物料已切断!', 'ok');
         advanceGameTask();
     } else if (task.id === 'alarm') {
         document.getElementById('alarm-overlay').classList.add('active');
@@ -2365,7 +2366,7 @@ function gameRadioReport() {
     const task = GAME_TASKS[gameTaskIndex];
     if (!task || task.target !== 'radio' || gameTaskState !== 'needClick') return;
     personnel[2].radioPose = true;
-    addLog('油槽工甲对讲机汇报: "报告班长! T301-2密封圈着火, 我已第一时间关闭紧急切断阀!"', 'warn');
+    addLog('油槽工甲对讲机汇报: "报告班长! T301-3密封圈着火, 我已第一时间关闭紧急切断阀!"', 'warn');
     setTimeout(() => { if (personnel[2]) personnel[2].radioPose = false; }, 2500);
     addLog('班长: "收到! 立即去按手动报警, 然后到泵房梯口警戒, 接引消防车!"', 'warn');
     advanceGameTask();
@@ -2403,11 +2404,11 @@ function startGame(role) {
     currentPhase = 0; phaseTimer = 0; drillClock = 0;
     phaseEvents = {};
     followPerson = -1; cameraMode = 'overview';
-    // 发现人就位 T301-2 罐前
-    const t2pos = tankPos(TANKS[1]);
+    // 发现人就位 T301-3 罐前
+    const t2pos = tankPos(TANKS.find(tk => tk.id === 'T301-3'));
     const p2 = personnel[2];
-    p2.group.position.set(t2pos.x + S(5), 0, t2pos.z - S(22));
-    p2.pos.set(t2pos.x + S(5), 0, t2pos.z - S(22));
+    p2.group.position.set(t2pos.x + S(5), 0, t2pos.z + S(22));
+    p2.pos.set(t2pos.x + S(5), 0, t2pos.z + S(22));
     p2.target = null; p2.walking = false; p2.arrived = false; p2.path = null; p2.pathIndex = 0;
     // 其他人员在集合点
     const muster = new THREE.Vector3(S(-135), 0, S(20));
@@ -2422,7 +2423,7 @@ function startGame(role) {
     document.getElementById('game-panel').classList.add('show');
     document.getElementById('game-wrong').textContent = '';
     document.getElementById('btn-start').disabled = true;
-    addLog('【角色实操】你扮演发现人·油槽工甲, 夜间巡检至T301-2罐前', 'warn');
+    addLog('【角色实操】你扮演发现人·油槽工甲, 夜间巡检至T301-3罐前', 'warn');
     // 绑定点击(仅一次)
     if (!window.__gameClickBound) {
         let pdX = 0, pdY = 0;
@@ -2572,10 +2573,11 @@ function updateParticles(dt) {
 function setView(name) {
     followPerson = -1;
     cameraMode = 'overview';
-    const t2 = tankPos(TANKS[1]);
+    const t2 = tankPos(TANKS.find(tk => tk.id === 'T301-3'));
+    const tFireH = TANKS.find(tk => tk.id === 'T301-3').H;
     const views = {
         overview: { pos: [S(150), S(105), S(170)], target: [0, S(4), 0] },
-        fire: { pos: [t2.x + S(55), S(30), t2.z + S(55)], target: [t2.x, S(TANK_H - 2), t2.z] },
+        fire: { pos: [t2.x + S(55), S(30), t2.z + S(55)], target: [t2.x, S(tFireH - 2), t2.z] },
         pump: { pos: [PUMP.x - S(38), S(16), S(26)], target: [PUMP.x, S(3), PUMP.z] },
         top: { pos: [0, S(260), S(1)], target: [0, 0, 0] }
     };
