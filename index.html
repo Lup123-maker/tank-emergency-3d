@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
@@ -197,9 +197,22 @@ canvas { display: block; }
 .score-rows .sr span:last-child { font-weight: 700; color: #9cf; }
 .score-box button { margin-top: 8px; padding: 10px 26px; border: none; border-radius: 8px;
     background: #e53935; color: #fff; font-size: 14px; font-weight: 700; cursor: pointer; }
+#btn-pause {background:#245879;color:white;}
+.score-box {max-height:85dvh;overflow:auto;}
+@media(max-width:700px) {
+ #header h1 {font-size:12px;} #header p {display:none;}
+ #ctrl-panel {top:38px;right:5px;max-height:33dvh;overflow:auto;gap:3px;}
+ .ctrl-btn,.view-btn {padding:7px 9px;font-size:11px;min-height:32px;}
+ #phase-bar {top:38px;left:5px;width:155px;padding:7px;max-height:27dvh;overflow:auto;}
+ #game-panel {top:auto!important;bottom:8px!important;left:5px!important;width:min(290px,75vw)!important;max-height:32dvh;overflow:auto;}
+ #log-panel {display:none;} #status-panel {display:none;}
+ #game-radio-btn {bottom:35dvh!important;}
+ #review {inset:5%!important;} .score-box {width:92vw;}
+}
 </style>
 </head>
 <body>
+<div id="review" style="display:none;position:fixed;inset:10%;overflow:auto;background:#10283e;color:white;padding:20px;z-index:1000"></div>
 <div id="loading"><div class="spinner"></div>正在构建301罐区应急演练场景...</div>
 <div id="canvas-container"></div>
 <div id="header">
@@ -208,6 +221,7 @@ canvas { display: block; }
 </div>
 <div id="ctrl-panel">
     <button class="ctrl-btn" id="btn-start" onclick="openModeSelect()">开始演练</button>
+    <button class="ctrl-btn" id="btn-pause" onclick="togglePause()">暂停</button><button class="ctrl-btn" onclick="showReview()">阶段记录</button>
     <button class="ctrl-btn" id="btn-speed" onclick="toggleSpeed()">速度 ×1</button>
     <button class="ctrl-btn" id="btn-reset" onclick="resetDrill()">重置</button>
     <div class="view-btn" onclick="setView('overview')">全景总览</div>
@@ -245,7 +259,7 @@ canvas { display: block; }
 </div>
 <div id="alarm-overlay"></div>
 <div id="alarm-banner">火警！T301-3浮盘密封圈着火</div>
-<div id="success-banner">✓ 火势已扑灭 · 无复燃 · 演练圆满成功</div>
+<div id="success-banner">✓ 演示流程播放结束 · 个人结果请查看评分与记录</div>
 <div id="tooltip"></div>
 
 <!-- 模式选择 -->
@@ -336,6 +350,7 @@ const PUMP = { x: S(132), z: S(-32), w: S(16), d: S(38), h: S(8) };
 
 // ---------- 全局状态 ----------
 let scene, camera, renderer, controls, clock;
+let paused = false, simSeconds = 0, gameSeconds = 0, radioUntil = 0, records = [];
 let drillRunning = false, drillTime = 0, speedMul = 1;
 let currentPhase = -1;
 let fireParticles, smokeParticles, spraySystems = [], foamParticles;
@@ -1862,6 +1877,12 @@ function startDrill() {
 }
 
 function resetDrill() {
+    paused = false; simSeconds = 0; gameSeconds = 0; radioUntil = 0; records = [];
+    document.getElementById('btn-pause').textContent = '暂停';
+    document.getElementById('review').style.display = 'none';
+    truckMoving = false; truckSpray = false;
+    if (fireTruck && window.truckInitial) fireTruck.position.copy(window.truckInitial);
+
     // 角色实操模式状态清理
     gameMode = false; gameActive = false; gameTaskIndex = 0; gameScoreShown = false;
     if (typeof clearHighlight === 'function') clearHighlight();
@@ -1912,6 +1933,7 @@ function updatePhaseUI() {
 }
 
 function addLog(text, cls) {
+    records.push({phase: currentPhase, time: simSeconds, text, kind: 'log'});
     const list = document.getElementById('log-list');
     const div = document.createElement('div');
     div.className = 'log-item' + (cls ? ' ' + cls : '');
@@ -1932,7 +1954,7 @@ function updateStatus() {
     document.getElementById('st-valve').textContent = v2 && v2.closed ? '已关闭' : '开启';
     document.getElementById('st-valve').className = 'val' + (v2 && v2.closed ? ' safe' : '');
 
-    const pumpStopped = currentPhase >= 3 && phaseTimer > 6;
+    const pumpStopped = currentPhase > 3 || (currentPhase === 3 && phaseTimer > 6);
     document.getElementById('st-pump').textContent = pumpStopped ? '已停运' : '运行中';
     document.getElementById('st-pump').className = 'val' + (pumpStopped ? ' safe' : '');
 
@@ -1952,9 +1974,9 @@ function updateStatus() {
 let phaseEvents = {};
 function updateDrill(dt) {
     if (!drillRunning) return;
-    dt *= speedMul;
+
     phaseTimer += dt;
-    drillClock += dt * 0.5; // 1秒真实时间≈0.5分钟演练时间
+    drillClock = simSeconds / 60; // 统一模拟秒，暂停不计时
     document.getElementById('st-time').textContent =
         String(Math.floor(drillClock)).padStart(2, '0') + ':' + String(Math.floor((drillClock % 1) * 60)).padStart(2, '0');
 
@@ -2143,7 +2165,7 @@ function updateDrill(dt) {
                 if (fireGlow) fireGlow.intensity = 0;
                 document.getElementById('success-banner').style.display = 'block';
                 addLog('演练结束! 用时约' + Math.round(drillClock) + '分钟, 各系统动作正常', 'ok');
-                addLog('讲评: 关阀及时、喷淋覆盖到位、泡沫供给充足, 演练达到预期目标', 'ok');
+                addLog('演示流程播放结束；个人操作结果请查看评分和阶段记录。', 'ok');
                 drillRunning = false;
                 document.getElementById('btn-start').disabled = false;
                 document.getElementById('btn-start').textContent = '重新演练';
@@ -2183,13 +2205,13 @@ function updateDrill(dt) {
         rainTask = 'done';
     }
     // 泵运转动画
-    const pumpStopped = currentPhase >= 3 && phaseTimer > 6;
+    const pumpStopped = currentPhase > 3 || (currentPhase === 3 && phaseTimer > 6);
     pumpImpellers.forEach((imp, i) => {
         if (!pumpStopped) imp.rotation.x += dt * (8 + i * 2);
     });
     // 报警灯闪烁
     if (currentPhase >= 1 && currentPhase < 5) {
-        const blink = Math.sin(Date.now() * 0.008) > 0;
+        const blink = Math.sin(simSeconds * 8) > 0;
         alarmLights.forEach(l => l.material.color.setHex(blink ? 0xff2200 : 0x661100));
     }
 
@@ -2302,6 +2324,7 @@ function triggerGameAI() {
 }
 function completeGameAction() {
     const task = GAME_TASKS[gameTaskIndex];
+    records.push({phase: currentPhase, time: simSeconds, text: task.label, kind: 'done', id: task.id});
     if (task.id === 'esd') {
         if (window.esdButton) window.esdButton.material.color.setHex(0xffcc00);
         valves.forEach(v => { v.targetAngle = Math.PI * 6; v.closed = true; });
@@ -2320,7 +2343,7 @@ function completeGameAction() {
     } else if (task.id === 'guard') {
         addLog('油槽工甲到达泵房梯口警戒: 接引消防车, 无关人员禁止进入罐区!', 'ok');
         gameActive = false;
-        gameDoneClock = Date.now();
+        gameDoneClock = gameSeconds; gameTaskIndex = GAME_TASKS.length;
         document.getElementById('game-radio-btn').classList.remove('show');
         document.getElementById('gp-instr').textContent = '你的应急处置任务已完成! 正在观看后续班组协同处置...';
         updateGameHUD();
@@ -2332,15 +2355,15 @@ function updateGameTasks(dt) {
     const p = personnel[2];
     if (gameTaskState === 'walking' && p.arrived) { completeGameAction(); return; }
     if (hlMesh && gameTaskState === 'needClick') {
-        const pu = (Math.sin(Date.now() * 0.006) + 1) / 2;
+        const pu = (Math.sin(simSeconds * 6) + 1) / 2;
         hlMesh.material.emissive.setHex(0xff8800);
         hlMesh.material.emissiveIntensity = 0.5 + pu * 1.0;
         if (hlLabel) { const s = 1 + pu * 0.12; hlLabel.scale.set(S(9) * s, S(4.5) * s, 1); }
     }
-    document.getElementById('gp-time').textContent = formatSec((Date.now() - gameStartClock) / 1000);
+    document.getElementById('gp-time').textContent = formatSec(gameSeconds);
 }
 function onGameClick(e) {
-    if (!gameMode || !gameActive) return;
+    if (paused || !gameMode || !gameActive) return;
     const task = GAME_TASKS[gameTaskIndex];
     if (!task || gameTaskState !== 'needClick' || task.target === 'radio') return;
     mouse.x = (e.clientX / innerWidth) * 2 - 1;
@@ -2354,7 +2377,8 @@ function onGameClick(e) {
         walkDiscoverer(task);
         document.getElementById('game-wrong').textContent = '';
         addLog('油槽工甲奔向' + (task.target === 'esd' ? '紧急切断阀' : '手动报警按钮') + '...');
-    } else {
+    } else if (hits.length && [window.esdButton, window.alarmButton].includes(hits[0].object)) {
+        records.push({phase: currentPhase, time: simSeconds, text: '误操作：点击非当前任务按钮', kind: 'wrong'});
         gameWrongClicks++;
         document.getElementById('gp-wrongn').textContent = gameWrongClicks;
         document.getElementById('game-wrong').textContent =
@@ -2362,19 +2386,21 @@ function onGameClick(e) {
     }
 }
 function gameRadioReport() {
-    if (!gameMode || !gameActive) return;
+    if (paused || !gameMode || !gameActive) return;
     const task = GAME_TASKS[gameTaskIndex];
     if (!task || task.target !== 'radio' || gameTaskState !== 'needClick') return;
     personnel[2].radioPose = true;
     addLog('油槽工甲对讲机汇报: "报告班长! T301-3密封圈着火, 我已第一时间关闭紧急切断阀!"', 'warn');
-    setTimeout(() => { if (personnel[2]) personnel[2].radioPose = false; }, 2500);
+    radioUntil = simSeconds + 2.5;
+    records.push({phase: currentPhase, time: simSeconds, text: '对讲机汇报班长', kind: 'done', id: 'radio'});
     addLog('班长: "收到! 立即去按手动报警, 然后到泵房梯口警戒, 接引消防车!"', 'warn');
     advanceGameTask();
 }
 function showGameScore() {
     if (gameScoreShown) return;
     gameScoreShown = true;
-    const sec = (gameDoneClock - gameStartClock) / 1000;
+    const sec = gameSeconds;
+    paused = true;
     let grade = 'A', cls = 'a', comment = '处置规范, 反应迅速';
     if (gameWrongClicks === 0 && sec <= 60) { grade = 'S'; cls = 's'; comment = '教科书式应急处置!'; }
     else if (gameWrongClicks <= 1 && sec <= 120) { grade = 'A'; cls = 'a'; comment = '处置规范, 反应迅速'; }
@@ -2385,10 +2411,15 @@ function showGameScore() {
     document.getElementById('sc-comment').textContent = comment;
     document.getElementById('sc-time').textContent = formatSec(sec);
     document.getElementById('sc-wrong').textContent = gameWrongClicks + ' 次';
-    document.getElementById('sc-order').textContent = '正确 ✓';
+    const done = records.filter(r => r.kind === 'done').map(r => r.id);
+    const correct = done.join(',') === GAME_TASKS.map(t => t.id).join(',');
+    document.getElementById('sc-order').textContent = correct ? '已完成 4/4（引导流程）' : '未完成 / 顺序异常';
+    if (!correct) { g.textContent = '未完成'; document.getElementById('sc-comment').textContent = '请查看实际操作记录'; }
+    document.getElementById('sc-comment').textContent += ' · 仅评发现人操作，非应急能力认证';
     document.getElementById('game-score').classList.add('show');
 }
 function closeScore() {
+    paused = false; document.getElementById('btn-pause').textContent = '暂停';
     document.getElementById('game-score').classList.remove('show');
 }
 function startGame(role) {
@@ -2457,7 +2488,7 @@ function setPersonPath(p, waypointsM, finalTarget) {
 }
 
 function updatePersonnel(dt) {
-    dt *= speedMul;
+
     personnel.forEach(p => {
         if (p.walking) {
             // 确定当前目标点(路径中间点 or 最终目标)
@@ -2542,13 +2573,13 @@ function updatePersonnel(dt) {
 
 // ---------- 粒子更新 ----------
 function updateParticles(dt) {
-    const adt = dt * speedMul;
+    const adt = dt;
     // 火势渐变(每帧始终运行): 保证扑灭后火焰/辉光完全熄灭, 不会因演练结束而冻结残留火苗
     fireIntensity += (targetFireIntensity - fireIntensity) * Math.min(adt, 0.08) * 1.15;
     if (targetFireIntensity <= 0.001 && fireIntensity < 0.02) fireIntensity -= adt * 0.06;
     if (fireIntensity < 0.005) fireIntensity = 0;
     if (fireGlow) {
-        fireGlow.intensity = fireIntensity * 3.5 + Math.sin(Date.now() * 0.01) * fireIntensity * 0.8;
+        fireGlow.intensity = fireIntensity * 3.5 + Math.sin(simSeconds * 10) * fireIntensity * 0.8;
     }
     [fireParticles, smokeParticles, foamParticles, ...spraySystems].forEach(sys => {
         const pos = sys.positions, col = sys.colors, siz = sys.sizes;
@@ -2657,16 +2688,39 @@ function animate() {
     requestAnimationFrame(animate);
     const dt = Math.min(clock.getDelta(), 0.05);
     controls.update();
-    updateDrill(dt);
-    updatePersonnel(dt);
-    updateParticles(dt);
-    updateFireTruck(dt);
+    if (!paused && drillRunning) {
+        const step = dt * speedMul;
+        simSeconds += step;
+        if (gameActive) gameSeconds += step;
+        if (radioUntil && simSeconds >= radioUntil) { personnel[2].radioPose = false; radioUntil = 0; }
+        updateDrill(step);
+        if (!paused) { updatePersonnel(step); updateParticles(step); updateFireTruck(step); }
+    }
     updateFollowTarget();
     updateFollowCamera(dt);
     renderer.render(scene, camera);
 }
 
+function togglePause() {
+    if (!drillRunning || document.getElementById('game-score').classList.contains('show')) return;
+    paused = !paused;
+    document.getElementById('btn-pause').textContent = paused ? '继续' : '暂停';
+}
+function showReview() {
+    if (drillRunning) { paused = true; document.getElementById('btn-pause').textContent = '继续'; }
+    const box = document.getElementById('review'); box.style.display = 'block';
+    box.replaceChildren();
+    const close = document.createElement('button'); close.textContent = '关闭记录（点击继续恢复播放）'; close.onclick = () => box.style.display = 'none'; box.append(close);
+    const title = document.createElement('p'); title.textContent = '分阶段回看 · 本轮时间与事件记录（非动画回放）'; box.append(title);
+    PHASES.forEach((phase, i) => {
+        const section = document.createElement('details'); const heading = document.createElement('summary'); heading.textContent = phase.name; section.append(heading);
+        const rows = records.filter(r => r.phase === i);
+        if (!rows.length) { const p = document.createElement('p'); p.textContent = '尚无记录'; section.append(p); }
+        rows.forEach(r => {const p = document.createElement('p'); p.textContent = formatSec(r.time) + ' ' + r.text; section.append(p);}); box.append(section);
+    });
+}
 init();
+if (fireTruck) window.truckInitial = fireTruck.position.clone();
 </script>
 </body>
 </html>
